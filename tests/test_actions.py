@@ -59,7 +59,7 @@ class TestProcessTorrents:
         torrents = [self.create_mock_torrent("t1", 1)]
         mock_input.return_value = "r"
 
-        result = process_torrents(client, torrents, None)
+        _ = process_torrents(client, torrents, None)
 
         client.remove_torrent.assert_called_with(1, delete_data=False)
 

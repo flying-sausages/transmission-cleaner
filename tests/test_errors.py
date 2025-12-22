@@ -168,7 +168,7 @@ class TestCrossSeedProtection:
 
     def create_mock_torrent(self, torrent_id, name, download_dir, file_names):
         """Helper
- to create a mock torrent with files."""
+        to create a mock torrent with files."""
         torrent = Mock()
         torrent.id = torrent_id
         torrent.name = name
