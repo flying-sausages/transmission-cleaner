@@ -28,7 +28,7 @@ def add_common_auth_args(parser):
     auth_group.add_argument("--host", type=str, default="127.0.0.1", help="Transmission host (default: 127.0.0.1)")
     auth_group.add_argument("--port", type=int, default=9091, help="Transmission port (default: 9091)")
     auth_group.add_argument(
-        "--path", type=str, default="/transmission/rpc", help="Transmission RPC path (default: /transmission/rpc)"
+        "--rpc-path", type=str, default="/transmission/rpc", help="Transmission RPC path (default: /transmission/rpc)"
     )
 
 
