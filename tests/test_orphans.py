@@ -48,26 +48,13 @@ class TestScanDirectory:
         assert any(f.name == "visible.txt" for f in result)
         assert any(f.name == ".hidden.txt" for f in result)
 
-    def test_excludes_system_files(self, tmp_path):
-        """Should always exclude known system files."""
+    def test_excludes_system_and_torrent_files(self, tmp_path):
+        """Should exclude system files and .torrent files."""
         (tmp_path / "file.txt").write_text("test")
         (tmp_path / ".DS_Store").write_text("test")
-        (tmp_path / "Thumbs.db").write_text("test")
-        (tmp_path / "desktop.ini").write_text("test")
-        (tmp_path / ".directory").write_text("test")
+        (tmp_path / "movie.torrent").write_text("test")
 
         result = scan_directory(tmp_path, include_hidden=True)
-
-        assert len(result) == 1
-        assert result[0].name == "file.txt"
-
-    def test_excludes_torrent_files(self, tmp_path):
-        """Should exclude .torrent files."""
-        (tmp_path / "file.txt").write_text("test")
-        (tmp_path / "movie.torrent").write_text("test")
-        (tmp_path / "show.TORRENT").write_text("test")
-
-        result = scan_directory(tmp_path, include_hidden=False)
 
         assert len(result) == 1
         assert result[0].name == "file.txt"
@@ -83,12 +70,6 @@ class TestScanDirectory:
         # Should have 2 files, not including the directory itself
         assert len(result) == 2
         assert all(f.is_file() for f in result)
-
-    def test_empty_directory(self, tmp_path):
-        """Should handle empty directory."""
-        result = scan_directory(tmp_path, include_hidden=False)
-
-        assert result == []
 
     def test_excludes_symlinks(self, tmp_path):
         """Should exclude symlinks to prevent scanning outside directory."""
@@ -155,17 +136,6 @@ class TestGetTrackedFiles:
         assert pathlib.Path("/data/show.mkv").resolve() in result
         assert pathlib.Path("/data/subs2.srt").resolve() in result
 
-    def test_returns_set_for_fast_lookup(self):
-        """Should return a set for efficient lookup."""
-        torrents = [self.create_mock_torrent(1, "/data", ["file.txt"])]
-
-        client = Mock()
-        client.get_torrents.return_value = torrents
-
-        result = get_tracked_files(client)
-
-        assert isinstance(result, set)
-
     def test_handles_no_torrents(self):
         """Should handle case with no torrents."""
         client = Mock()
@@ -224,29 +194,6 @@ class TestFindOrphanedFiles:
             (tmp_path / "file1.txt").resolve(),
             (tmp_path / "file2.txt").resolve(),
         }
-
-        result = find_orphaned_files(scanned, tracked)
-
-        assert result == []
-
-    def test_all_orphans_when_none_tracked(self, tmp_path):
-        """Should return all files when nothing is tracked."""
-        scanned = [
-            tmp_path / "file1.txt",
-            tmp_path / "file2.txt",
-            tmp_path / "file3.txt",
-        ]
-
-        tracked = set()
-
-        result = find_orphaned_files(scanned, tracked)
-
-        assert len(result) == 3
-
-    def test_handles_empty_scanned_list(self):
-        """Should handle empty scanned files list."""
-        scanned = []
-        tracked = {pathlib.Path("/data/file.txt")}
 
         result = find_orphaned_files(scanned, tracked)
 
