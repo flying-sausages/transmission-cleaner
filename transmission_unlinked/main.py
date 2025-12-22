@@ -1,13 +1,11 @@
 import argparse
-import json
 import signal
 import sys
-import textwrap
 
-# from traceback_with_variables import activate_by_import  # noqa: F401
-from transmission_rpc import Client
-
-from transmission_unlinked.core import filter_torrents, get_torrents_without_hardlinks, process_torrents
+from transmission_unlinked.actions import process_torrents
+from transmission_unlinked.checkers.hardlinks import get_torrents_without_hardlinks
+from transmission_unlinked.client import create_client, get_client_config
+from transmission_unlinked.filters import filter_torrents
 
 
 def signal_handler(signal, frame):
@@ -43,12 +41,11 @@ def parse_args():
         "--action",
         choices=[None, "list", "l", "delete", "d", "remove", "r"],
         default=None,
-        help=textwrap.dedent(
-            """Action to apply to torrents without any other hardlinks. Interactive by default
-                list / l:       show torrents only
-                delete / d:     remove torrent with data on disk
-                remove / r:     remove torrent from client only
-            """.replace("\n", " | ")
+        help=(
+            "Action to apply to torrents without any other hardlinks. Interactive by default | "
+            "list / l: show torrents only | "
+            "delete / d: remove torrent with data on disk | "
+            "remove / r: remove torrent from client only"
         ),
     )
 
@@ -73,41 +70,20 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_settings_from_file(settings_file: str, password: str) -> dict:
-    """Load Transmission settings from settings.json file."""
-    with open(settings_file, "r") as f:
-        settings = json.load(f)
-
-    return {
-        "host": "127.0.0.1",
-        "port": settings.get("rpc-port", 9091),
-        "username": settings.get("rpc-username"),
-        "password": password,
-        "path": settings.get("rpc-url", "/transmission/rpc"),
-    }
-
-
-def get_client_config(args) -> dict:
-    """Get client configuration from arguments or settings file."""
-    if args.settings_file:
-        return load_settings_from_file(args.settings_file, args.password)
-
-    return {
-        "protocol": args.protocol,
-        "host": args.host,
-        "port": args.port,
-        "username": args.username,
-        "password": args.password,
-        "path": args.path,
-    }
-
-
 def main():
     args = parse_args()
 
     # Get client configuration
-    client_config = get_client_config(args)
-    c = Client(**client_config)
+    client_config = get_client_config(
+        settings_file=args.settings_file,
+        protocol=args.protocol,
+        host=args.host,
+        port=args.port,
+        username=args.username,
+        password=args.password,
+        path=args.path,
+    )
+    c = create_client(**client_config)
 
     torrents = c.get_torrents()
     print(f"[INFO]   Found {len(torrents)} torrents")
