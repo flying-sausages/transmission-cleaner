@@ -12,22 +12,20 @@ If you haven't yet, [install uv](https://docs.astral.sh/uv/getting-started/insta
 
 ```bash
 # Using uv (recommended for CLI tools)
-uv tool install transmission-cleaner
+uv tool install transmission-unlinked
 
 # Or from source
-git clone https://github.com/flying_sausages/transmission-cleaner.git
-cd transmission-cleaner
+git clone https://github.com/flying-sausages/transmission-unlinked.git
+cd transmission-unlinked
 uv tool install .
 ```
 
-**See [INSTALL.md](INSTALL.md) for detailed installation instructions** including uv setup, virtual environments, and troubleshooting.
-
 ## Usage
 
-After installation, you can run the tool using the `transmission-cleaner` command:
+After installation, you can run the tool using the `transmission-unlinked` command:
 
 ```bash
-transmission-unlinked --password YOUR_PASSWORD
+transmission-unlinked --settings-file ~/.config/transmission-daemon/settings.json --password YOUR_PASSWORD
 ```
 
 ### Arrs setup suggestion:
@@ -36,7 +34,7 @@ transmission-unlinked --password YOUR_PASSWORD
 - In the arr's download client settings, set a value for `Category` (this moves downloaded torrents into the following )
 - use that for the directory argument (`transmission-unlinked --directory Sonarr`)
 - After playing around with the tool, add something like this to your crontab to run daily at 3am:
-  `0 3 * * * /path/to/transmission-unlinked --settings-file ~/.config/transmission-daemon/settings.json --password YOUR_PASSWORD --directory /path/to/sonarr --action delete >> /var/log/transmission-cleaner.log 2>&1`
+`0 3 * * * /path/to/transmission-unlinked --settings-file ~/.config/transmission-daemon/settings.json --password YOUR_PASSWORD --directory /path/to/sonarr --action delete >> /var/log/transmission-unlinked.log 2>&1`
 
 ## Development
 
