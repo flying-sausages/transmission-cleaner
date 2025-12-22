@@ -253,7 +253,7 @@ def main():
         port=args.port,
         username=args.username,
         password=args.password,
-        path=args.path,
+        path=args.rpc_path,
     )
     client = create_client(**client_config)
 
