@@ -1,10 +1,10 @@
 [project]
 name = "transmission-cleaner"
-version = "1.0.0"
+version = "1.0.0.dev1"
 description = "Transmission maintenance tool for managing torrents by hardlinks, errors, and orphaned files"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Your Name", email = "flying_sausages@protonmail.com"}
 ]
@@ -15,7 +15,7 @@ keywords = ["transmission", "torrent", "hardlinks", "cleanup", "bittorrent"]
 classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: MIT License",
+
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
