@@ -32,6 +32,12 @@ def parse_args():
         type=str,
         help="Filter torrents by announce URL (substring match)",
     )
+    parser.add_argument(
+        "--min-days",
+        type=int,
+        default=7,
+        help="Minimum days of active seeding time (default: 7)",
+    )
 
     parser.add_argument(
         "--action",
@@ -106,7 +112,7 @@ def main():
     torrents = c.get_torrents()
     print(f"Found {len(torrents)} torrents.")
 
-    torrents = filter_torrents(torrents, args.directory, args.tracker)
+    torrents = filter_torrents(torrents, args.directory, args.tracker, args.min_days)
 
     without_hardlinks = get_torrents_without_hardlinks(torrents)
 
