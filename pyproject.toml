@@ -1,10 +1,10 @@
 [project]
-name = "transmission-unlinked"
-version = "0.2.1"
-description = "Helps you remove your transmission torrents which have no hardlinks"
+name = "transmission-cleaner"
+version = "1.0.0.dev1"
+description = "Transmission maintenance tool for managing torrents by hardlinks, errors, and orphaned files"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Your Name", email = "flying_sausages@protonmail.com"}
 ]
@@ -15,7 +15,7 @@ keywords = ["transmission", "torrent", "hardlinks", "cleanup", "bittorrent"]
 classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: MIT License",
+
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -31,12 +31,12 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/flying-sausages/transmission-unlinked"
-Repository = "https://github.com/flying-sausages/transmission-unlinked"
-Issues = "https://github.com/flying-sausages/transmission-unlinked/issues"
+Homepage = "https://github.com/flying-sausages/transmission-cleaner"
+Repository = "https://github.com/flying-sausages/transmission-cleaner"
+Issues = "https://github.com/flying-sausages/transmission-cleaner/issues"
 
 [project.scripts]
-transmission-unlinked = "transmission_unlinked.main:main"
+transmission-cleaner = "transmission_cleaner.main:main"
 
 [dependency-groups]
 dev = [
@@ -45,6 +45,7 @@ dev = [
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
     "pytest-cov>=6.0.0",
+    "tox-uv>=1.29.0",
 ]
 
 [tool.ruff]

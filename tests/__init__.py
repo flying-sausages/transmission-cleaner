@@ -1,1 +1,1 @@
-"""Tests for transmission-unlinked package."""
+"""Tests for transmission-cleaner package."""
