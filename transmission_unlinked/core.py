@@ -19,7 +19,7 @@ def get_torrents_without_hardlinks(torrents: list[Torrent]) -> list[Torrent]:
                     has_hardlink = True
                     break
             except FileNotFoundError:
-                print("FILE NOT FOUND!!\n -", file_path)
+                print(f"[ERROR]  File not found: {file_path}")
                 break
         else:
             if not has_hardlink:
@@ -35,24 +35,24 @@ def filter_torrents(
 ) -> list[Torrent]:
     # filter torrents to only have ones that are seeding or stopped
     torrents = [x for x in torrents if x.status == "seeding" or x.status == "stopped"]
-    print(f"Filtered to {len(torrents)} seeding or stopped torrents")
+    print(f"[FILTER] Filtered to {len(torrents)} seeding or stopped torrents")
     # Filter torrents by directory if specified
     if dir:
         torrents = [x for x in torrents if dir in str(x.download_dir)]
-        print(f"Filtered to {len(torrents)} torrents in directory matching '{dir}'")
+        print(f"[FILTER] Filtered to {len(torrents)} torrents in directory matching '{dir}'")
 
     # Filter torrents by tracker if specified
     if tracker:
         torrents = [x for x in torrents if any(tracker in t.announce for t in x.trackers)]
-        print(f"Filtered to {len(torrents)} torrents with tracker matching '{tracker}'")
+        print(f"[FILTER] Filtered to {len(torrents)} torrents with tracker matching '{tracker}'")
 
     if not dir and not tracker:
-        print("No directory or tracker filters applied, processing all torrents")
+        print("[INFO]   No directory or tracker filters applied, processing all torrents")
 
     # Filter torrents by minimum seeding days
     min_seconds = min_days * 24 * 60 * 60
     torrents = [x for x in torrents if x.seconds_seeding >= min_seconds]
-    print(f"Filtered to {len(torrents)} torrents with at least {min_days} days of active seeding")
+    print(f"[FILTER] Filtered to {len(torrents)} torrents with at least {min_days} days of active seeding")
 
     return torrents
 
@@ -64,18 +64,20 @@ def process_torrents(client: Client, torrents: list[Torrent], action: str):
             print(f"  - {torrent.name}")
     elif action in ["delete-data", "d"]:
         for torrent in torrents:
-            print(f"{torrent.name}: Removing with data")
+            print(f"[ACTION] {torrent.name}: Removing with data")
             client.remove_torrent(torrent.id, delete_data=True)
     elif action in ["remove", "r"]:
         for torrent in torrents:
-            print(f"{torrent.name}: Removing without data")
+            print(f"[ACTION] {torrent.name}: Removing without data")
             client.remove_torrent(torrent.id, delete_data=False)
     else:
         for torrent in torrents:
-            choice = input(f"{torrent.name}\n^ Remove torrent? [N/y/d(ata)] ").strip().lower() or "n"
+            choice = input(f"[PROMPT] {torrent.name}\n         Remove torrent? [N/y/d(ata)] ").strip().lower() or "n"
             if choice == "y":
+                print(f"[ACTION] {torrent.name}: Removing without data")
                 client.remove_torrent(torrent.id, delete_data=False)
             elif choice == "d":
+                print(f"[ACTION] {torrent.name}: Removing with data")
                 client.remove_torrent(torrent.id, delete_data=True)
             else:
-                print("skipped")
+                print("[SKIP]   Skipped")

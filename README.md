@@ -1,4 +1,4 @@
-# Transmission Cleaner
+# Transmission unlinked file cleaner
 
 A CLI tool to help you clean up Transmission torrents that don't have hardlinks to other files on your system.
 

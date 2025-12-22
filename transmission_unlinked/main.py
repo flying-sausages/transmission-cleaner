@@ -11,7 +11,7 @@ from transmission_unlinked.core import filter_torrents, get_torrents_without_har
 
 
 def signal_handler(signal, frame):
-    print(" Graceful exit 🦢")
+    print("[INFO]   Graceful exit 🦢")
     sys.exit(0)
 
 
@@ -110,13 +110,13 @@ def main():
     c = Client(**client_config)
 
     torrents = c.get_torrents()
-    print(f"Found {len(torrents)} torrents.")
+    print(f"[INFO]   Found {len(torrents)} torrents")
 
     torrents = filter_torrents(torrents, args.directory, args.tracker, args.min_days)
 
     without_hardlinks = get_torrents_without_hardlinks(torrents)
 
-    print(f"Found {len(without_hardlinks)} torrents without hardlinks")
+    print(f"[INFO]   Found {len(without_hardlinks)} torrents without hardlinks")
 
     process_torrents(c, without_hardlinks, args.action)
 
