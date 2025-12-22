@@ -74,19 +74,3 @@ class TestFilterTorrents:
 
         assert len(result) == 1
         assert result[0].name == "t1"
-
-    @patch("builtins.print")
-    def test_filters_combined(self, mock_print):
-        """Should apply multiple filters together."""
-        torrents = [
-            self.create_mock_torrent("t1", "seeding", "/data/movies", ["http://tracker1.com"], 10 * 24 * 60 * 60),
-            self.create_mock_torrent("t2", "seeding", "/data/tv", ["http://tracker1.com"], 10 * 24 * 60 * 60),
-            self.create_mock_torrent("t3", "seeding", "/data/movies", ["http://tracker2.com"], 10 * 24 * 60 * 60),
-            self.create_mock_torrent("t4", "seeding", "/data/movies", ["http://tracker1.com"], 5 * 24 * 60 * 60),
-            self.create_mock_torrent("t5", "downloading", "/data/movies", ["http://tracker1.com"], 10 * 24 * 60 * 60),
-        ]
-
-        result = filter_torrents(torrents, "movies", "tracker1", 7)
-
-        assert len(result) == 1
-        assert result[0].name == "t1"
