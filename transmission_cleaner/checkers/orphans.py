@@ -1,5 +1,6 @@
 """Orphaned file detection for files not tracked by any torrent."""
 
+import os
 import pathlib
 
 from transmission_rpc import Client
@@ -24,12 +25,14 @@ def scan_directory(
     system_files = {".DS_Store", "Thumbs.db", "desktop.ini", ".directory"}
 
     # Recursively walk the directory (don't follow symlinks)
-    for root, dirs, filenames in directory.walk(follow_symlinks=False):
+    for root, dirs, filenames in os.walk(directory, followlinks=False):
+        root_path = pathlib.Path(root)
+
         # Remove symlink directories from dirs to prevent descending into them
-        dirs[:] = [d for d in dirs if not (root / d).is_symlink()]
+        dirs[:] = [d for d in dirs if not (root_path / d).is_symlink()]
 
         for filename in filenames:
-            item = root / filename
+            item = root_path / filename
 
             if (
                 # Skip symlinks to prevent scanning outside directory
