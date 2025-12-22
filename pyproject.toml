@@ -1,7 +1,7 @@
 [project]
 name = "transmission-unlinked"
-version = "0.2.1"
-description = "Helps you remove your transmission torrents which have no hardlinks"
+version = "1.0.0"
+description = "Transmission maintenance tool for managing torrents by hardlinks, errors, and orphaned files"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
