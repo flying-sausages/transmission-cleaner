@@ -85,6 +85,9 @@ ruff check .
 
 # Run type checking
 basedpyright
+
+# Run tests
+uv run pytest
 ```
 
 ## Safety Notes
