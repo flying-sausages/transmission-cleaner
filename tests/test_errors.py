@@ -200,10 +200,3 @@ class TestIsCrossSeeded:
             result = is_cross_seeded(client, torrent)
 
             assert result is False
-
-
-class TestCrossSeedProtection:
-    """Tests for cross-seed protection enforcement during deletion."""
-
-    def create_mock_torrent(self, torrent_id, name, download_dir, file_names):
-        """Helper
