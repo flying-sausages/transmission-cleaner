@@ -42,6 +42,9 @@ transmission-unlinked = "transmission_unlinked.main:main"
 dev = [
     "basedpyright>=1.36.1",
     "ruff>=0.14.10",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
+    "pytest-cov>=6.0.0",
 ]
 
 [tool.ruff]
@@ -49,3 +52,14 @@ line-length = 120
 
 [tool.uv]
 package = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
