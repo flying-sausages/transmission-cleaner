@@ -1,6 +1,6 @@
 import pathlib
 
-from transmission_rpc import Torrent
+from transmission_rpc import Client, Torrent
 
 
 def is_hardlink(path: pathlib.Path) -> bool:
@@ -51,7 +51,7 @@ def filter_torrents(
     return torrents
 
 
-def process_torrents(client, torrents: list[Torrent], action: str):
+def process_torrents(client: Client, torrents: list[Torrent], action: str):
     # Handle action based on argument
     if action in ["list", "l"]:
         for torrent in torrents:
