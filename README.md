@@ -1,4 +1,4 @@
-# Transmission unlinked file cleaner
+# Transmission Cleaner
 
 A CLI tool to help you clean up Transmission torrents that don't have hardlinks to other files on your system.
 
@@ -12,30 +12,30 @@ If you haven't yet, [install uv](https://docs.astral.sh/uv/getting-started/insta
 
 ```bash
 # Using uv (recommended for CLI tools)
-uv tool install transmission-unlinked
+uv tool install transmission-cleaner
 
 # Or from source
-git clone https://github.com/flying-sausages/transmission-unlinked.git
-cd transmission-unlinked
+git clone https://github.com/flying-sausages/transmission-cleaner.git
+cd transmission-cleaner
 uv tool install .
 ```
 
 ## Usage
 
-After installation, you can run the tool using the `transmission-unlinked` command:
+After installation, you can run the tool using the `transmission-cleaner` command:
 
 ```bash
-transmission-unlinked --settings-file ~/.config/transmission-daemon/settings.json --password YOUR_PASSWORD
+transmission-cleaner --settings-file ~/.config/transmission-daemon/settings.json --password YOUR_PASSWORD
 ```
 ### Arguments
 you can see the latest commandline args by running the following:
 ```bash
-transmision-unlinked --help
+transmission-cleaner --help
 ```
 
 Currently, this looks like the following:
 ```
-usage: transmission-unlinked [-h] [-d DIRECTORY] [-t TRACKER] [--min-days MIN_DAYS]
+usage: transmission-cleaner [-h] [-d DIRECTORY] [-t TRACKER] [--min-days MIN_DAYS]
                              [--action {None,list,l,delete,d,remove,r}] [--settings-file SETTINGS_FILE]
                              [--protocol {http,https}] [--username USERNAME] --password PASSWORD
                              [--host HOST] [--port PORT] [--path PATH]
@@ -70,9 +70,9 @@ authentication:
 - Have something (Plex/maintainerr/etc.) automatically delete things
 - Make sure your arr has `Unmonitor Deleted Episodes` set to True
 - In the arr's download client settings, set a value for `Category` (this moves downloaded torrents into the following )
-- use that for the directory argument (`transmission-unlinked --directory Sonarr`)
+- use that for the directory argument (`transmission-cleaner --directory Sonarr`)
 - After playing around with the tool, add something like this to your crontab to run daily at 3am:
-`0 3 * * * /path/to/transmission-unlinked --settings-file ~/.config/transmission-daemon/settings.json --password YOUR_PASSWORD --directory /path/to/sonarr --action delete >> /var/log/transmission-unlinked.log 2>&1`
+`0 3 * * * /path/to/transmission-cleaner --settings-file ~/.config/transmission-daemon/settings.json --password YOUR_PASSWORD --directory /path/to/sonarr --action delete >> /var/log/transmission-cleaner.log 2>&1`
 
 ## Development
 

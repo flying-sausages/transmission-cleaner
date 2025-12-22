@@ -3,7 +3,7 @@
 import pathlib
 from unittest.mock import Mock
 
-from transmission_unlinked.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
+from transmission_cleaner.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
 
 
 class TestScanDirectory:

@@ -27,4 +27,4 @@ jobs:
         run: uv sync
 
       - name: Run tests with coverage
-        run: uv run pytest --cov=transmission_unlinked --cov-report=term --cov-report=xml
+        run: uv run pytest --cov=transmission_cleaner --cov-report=term --cov-report=xml

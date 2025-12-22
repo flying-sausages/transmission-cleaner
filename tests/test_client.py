@@ -3,7 +3,7 @@
 import json
 from unittest.mock import mock_open, patch
 
-from transmission_unlinked.client import get_client_config, load_settings_from_file
+from transmission_cleaner.client import get_client_config, load_settings_from_file
 
 
 class TestLoadSettingsFromFile:

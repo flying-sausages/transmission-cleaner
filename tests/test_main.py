@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from transmission_unlinked.main import parse_args
+from transmission_cleaner.main import parse_args
 
 
 class TestParseArgsHardlinks:

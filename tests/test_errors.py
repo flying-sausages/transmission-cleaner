@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-from transmission_unlinked.checkers.errors import check_cross_seeding, get_torrents_with_errors, is_cross_seeded
+from transmission_cleaner.checkers.errors import check_cross_seeding, get_torrents_with_errors, is_cross_seeded
 
 
 class TestGetTorrentsWithErrors:
@@ -143,7 +143,7 @@ class TestIsCrossSeeded:
 
         client = Mock()
 
-        with patch("transmission_unlinked.checkers.errors.check_cross_seeding") as mock_check:
+        with patch("transmission_cleaner.checkers.errors.check_cross_seeding") as mock_check:
             mock_check.return_value = [Mock(), Mock()]  # Two cross-seeders
 
             result = is_cross_seeded(client, torrent)
@@ -155,9 +155,30 @@ class TestIsCrossSeeded:
         torrent = Mock()
         client = Mock()
 
-        with patch("transmission_unlinked.checkers.errors.check_cross_seeding") as mock_check:
+        with patch("transmission_cleaner.checkers.errors.check_cross_seeding") as mock_check:
             mock_check.return_value = []  # No cross-seeders
 
             result = is_cross_seeded(client, torrent)
 
             assert result is False
+
+
+class TestCrossSeedProtection:
+    """Tests for cross-seed protection enforcement during deletion."""
+
+    def create_mock_torrent(self, torrent_id, name, download_dir, file_names):
+        """Helper
+ to create a mock torrent with files."""
+        torrent = Mock()
+        torrent.id = torrent_id
+        torrent.name = name
+        torrent.download_dir = download_dir
+
+        mock_files = []
+        for file_name in file_names:
+            mock_file = Mock()
+            mock_file.name = file_name
+            mock_files.append(mock_file)
+        torrent.get_files.return_value = mock_files
+
+        return torrent

@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-from transmission_unlinked.checkers.hardlinks import get_torrents_without_hardlinks, is_hardlink
+from transmission_cleaner.checkers.hardlinks import get_torrents_without_hardlinks, is_hardlink
 
 
 class TestIsHardlink:
@@ -42,7 +42,7 @@ class TestGetTorrentsWithoutHardlinks:
         torrent.get_files.return_value = mock_files
         return torrent
 
-    @patch("transmission_unlinked.checkers.hardlinks.is_hardlink")
+    @patch("transmission_cleaner.checkers.hardlinks.is_hardlink")
     def test_excludes_torrents_with_hardlinks(self, mock_is_hardlink, tmp_path):
         """Torrents with any hardlinked files should be excluded."""
         mock_is_hardlink.return_value = True
@@ -52,7 +52,7 @@ class TestGetTorrentsWithoutHardlinks:
 
         assert result == []
 
-    @patch("transmission_unlinked.checkers.hardlinks.is_hardlink")
+    @patch("transmission_cleaner.checkers.hardlinks.is_hardlink")
     def test_includes_torrents_without_hardlinks(self, mock_is_hardlink, tmp_path):
         """Torrents without any hardlinks should be included."""
         mock_is_hardlink.return_value = False
@@ -64,7 +64,7 @@ class TestGetTorrentsWithoutHardlinks:
         assert result[0].name == "test"
 
     @patch("builtins.print")
-    @patch("transmission_unlinked.checkers.hardlinks.is_hardlink")
+    @patch("transmission_cleaner.checkers.hardlinks.is_hardlink")
     def test_handles_missing_files(self, mock_is_hardlink, mock_print, tmp_path):
         """Missing files should be logged and torrent excluded."""
         mock_is_hardlink.side_effect = FileNotFoundError()

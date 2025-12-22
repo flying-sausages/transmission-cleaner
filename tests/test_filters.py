@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-from transmission_unlinked.filters import filter_torrents
+from transmission_cleaner.filters import filter_torrents
 
 
 class TestFilterTorrents:

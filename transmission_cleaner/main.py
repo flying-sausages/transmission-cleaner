@@ -2,9 +2,9 @@ import argparse
 import signal
 import sys
 
-from transmission_unlinked.actions import process_torrents
-from transmission_unlinked.client import create_client, get_client_config
-from transmission_unlinked.filters import filter_torrents
+from transmission_cleaner.actions import process_torrents
+from transmission_cleaner.client import create_client, get_client_config
+from transmission_cleaner.filters import filter_torrents
 
 
 def signal_handler(signal, frame):
@@ -151,7 +151,7 @@ def parse_args():
 def handle_hardlinks(client, args):
     """Handle the hardlinks subcommand."""
 
-    from transmission_unlinked.checkers.hardlinks import get_torrents_without_hardlinks
+    from transmission_cleaner.checkers.hardlinks import get_torrents_without_hardlinks
 
     torrents = client.get_torrents()
     print(f"[INFO]   Found {len(torrents)} torrents")
@@ -168,7 +168,7 @@ def handle_hardlinks(client, args):
 
 def handle_errors(client, args):
     """Handle the errors subcommand."""
-    from transmission_unlinked.checkers.errors import check_cross_seeding, get_torrents_with_errors
+    from transmission_cleaner.checkers.errors import check_cross_seeding, get_torrents_with_errors
 
     torrents = client.get_torrents()
     print(f"[INFO]   Found {len(torrents)} torrents")
@@ -203,7 +203,7 @@ def handle_orphans(client, args):
     """Handle the orphans subcommand."""
     import pathlib
 
-    from transmission_unlinked.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
+    from transmission_cleaner.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
 
     directory = pathlib.Path(args.directory)
     if not directory.exists():
