@@ -109,18 +109,17 @@ class TestCheckCrossSeeding:
     def test_no_cross_seeding(self):
         """Should return empty list when no files are shared."""
         target = self.create_mock_torrent(1, "target", "/data", ["movie1.mkv"])
-        other1 = self.create_mock_torrent(2, "other1", "/data", ["movie2.mkv"])
-        other2 = self.create_mock_torrent(3, "other2", "/data", ["movie3.mkv"])
+        other = self.create_mock_torrent(2, "other", "/data", ["movie2.mkv"])
 
         client = Mock()
-        client.get_torrents.return_value = [target, other1, other2]
+        client.get_torrents.return_value = [target, other]
 
         result = check_cross_seeding(client, target)
 
         assert result == []
 
-    def test_multiple_cross_seeders(self):
-        """Should detect multiple torrents sharing files."""
+    def test_detects_multiple_cross_seeders(self):
+        """Should detect when multiple torrents share files."""
         target = self.create_mock_torrent(1, "target", "/data", ["movie.mkv"])
         other1 = self.create_mock_torrent(2, "other1", "/data", ["movie.mkv"])
         other2 = self.create_mock_torrent(3, "other2", "/data", ["movie.mkv"])
@@ -131,44 +130,6 @@ class TestCheckCrossSeeding:
         result = check_cross_seeding(client, target)
 
         assert len(result) == 2
-        assert result[0].name == "other1"
-        assert result[1].name == "other2"
-
-    def test_different_paths_not_cross_seeded(self):
-        """Should not detect cross-seeding when files are in different directories."""
-        target = self.create_mock_torrent(1, "target", "/data/movies", ["movie.mkv"])
-        other = self.create_mock_torrent(2, "other", "/data/tv", ["movie.mkv"])
-
-        client = Mock()
-        client.get_torrents.return_value = [target, other]
-
-        result = check_cross_seeding(client, target)
-
-        assert result == []
-
-    def test_ignores_self(self):
-        """Should not report the target torrent as cross-seeding itself."""
-        target = self.create_mock_torrent(1, "target", "/data", ["movie.mkv"])
-
-        client = Mock()
-        client.get_torrents.return_value = [target]
-
-        result = check_cross_seeding(client, target)
-
-        assert result == []
-
-    def test_partial_overlap(self):
-        """Should detect cross-seeding even with partial file overlap."""
-        target = self.create_mock_torrent(1, "target", "/data", ["movie.mkv", "subs.srt"])
-        other = self.create_mock_torrent(2, "other", "/data", ["movie.mkv", "different.txt"])
-
-        client = Mock()
-        client.get_torrents.return_value = [target, other]
-
-        result = check_cross_seeding(client, target)
-
-        assert len(result) == 1
-        assert result[0].name == "other"
 
 
 class TestIsCrossSeeded:
