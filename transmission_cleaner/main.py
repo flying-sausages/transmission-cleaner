@@ -163,7 +163,12 @@ def handle_hardlinks(client, args):
 
     # Normalize action for interactive mode
     action = args.action if args.action not in ["interactive", "i"] else None
-    process_torrents(client, without_hardlinks, action)
+    bytes_freed = process_torrents(client, without_hardlinks, action)
+
+    # Print summary if any space was freed
+    if bytes_freed > 0:
+        space_freed_gb = bytes_freed / (1024**3)
+        print(f"\n[INFO]   Total disk space freed: {space_freed_gb:.2f} GB")
 
 
 def handle_errors(client, args):
@@ -196,13 +201,19 @@ def handle_errors(client, args):
         print("[INFO]   Skipping cross-seed checks")
 
     # Process torrents with cross-seed protection using shared action processor
-    process_torrents(client, errored_torrents, action, cross_seed_map=cross_seed_map)
+    bytes_freed = process_torrents(client, errored_torrents, action, cross_seed_map=cross_seed_map)
+
+    # Print summary if any space was freed
+    if bytes_freed > 0:
+        space_freed_gb = bytes_freed / (1024**3)
+        print(f"\n[INFO]   Total disk space freed: {space_freed_gb:.2f} GB")
 
 
 def handle_orphans(client, args):
     """Handle the orphans subcommand."""
     import pathlib
 
+    from transmission_cleaner.actions import process_orphaned_files
     from transmission_cleaner.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
 
     directory = pathlib.Path(args.directory)
@@ -222,40 +233,13 @@ def handle_orphans(client, args):
     print(f"[INFO]   Found {len(orphaned)} orphaned files")
 
     # Process orphaned files
-    if args.action in ["list", "l"]:
-        for file_path in sorted(orphaned):
-            try:
-                size = file_path.stat().st_size if file_path.exists() else 0
-                size_mb = size / (1024 * 1024)
-                print(f"  - {file_path} ({size_mb:.2f} MB)")
-            except (OSError, PermissionError) as e:
-                print(f"  - {file_path} [ERROR: {e}]")
-    elif args.action in ["delete", "d"]:
-        for file_path in orphaned:
-            try:
-                if file_path.exists():
-                    print(f"[ACTION] Deleting: {file_path}")
-                    file_path.unlink()
-                else:
-                    print(f"[SKIP]   File no longer exists: {file_path}")
-            except (OSError, PermissionError) as e:
-                print(f"[ERROR]  Failed to delete {file_path}: {e}")
-    else:  # interactive
-        for file_path in orphaned:
-            try:
-                if not file_path.exists():
-                    print(f"[SKIP]   File no longer exists: {file_path}")
-                    continue
-                size = file_path.stat().st_size
-                size_mb = size / (1024 * 1024)
-                choice = input(f"[PROMPT] {file_path} ({size_mb:.2f} MB)\n         Delete file? [y/N] ").strip().lower()
-                if choice == "y":
-                    print(f"[ACTION] Deleting: {file_path}")
-                    file_path.unlink()
-                else:
-                    print("[SKIP]   Skipped")
-            except (OSError, PermissionError) as e:
-                print(f"[ERROR]  Cannot process {file_path}: {e}")
+    action = args.action if args.action not in ["interactive", "i"] else None
+    bytes_freed = process_orphaned_files(orphaned, action)
+
+    # Print summary if any space was freed
+    if bytes_freed > 0:
+        space_freed_gb = bytes_freed / (1024**3)
+        print(f"\n[INFO]   Total disk space freed: {space_freed_gb:.2f} GB")
 
 
 def main():
