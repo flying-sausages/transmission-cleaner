@@ -10,7 +10,7 @@ from transmission_cleaner.main import parse_args
 class TestParseArgsHardlinks:
     """Tests for hardlinks subcommand argument parsing."""
 
-    @patch("sys.argv", ["transmission-unlinked", "hardlinks", "--password", "pass"])
+    @patch("sys.argv", ["transmission-cleaner", "hardlinks", "--password", "pass"])
     def test_hardlinks_minimal_args_with_defaults(self):
         """Should parse hardlinks with just password and use default values."""
         args = parse_args()
@@ -27,7 +27,7 @@ class TestParseArgsHardlinks:
     @patch(
         "sys.argv",
         [
-            "transmission-unlinked",
+            "transmission-cleaner",
             "hardlinks",
             "--password",
             "pass",
@@ -58,7 +58,7 @@ class TestParseArgsHardlinks:
         assert args.host == "192.168.1.100"
         assert args.port == 8080
 
-    @patch("sys.argv", ["transmission-unlinked", "hardlinks", "--password", "pass", "--action", "list"])
+    @patch("sys.argv", ["transmission-cleaner", "hardlinks", "--password", "pass", "--action", "list"])
     def test_hardlinks_list_action(self):
         """Should parse list action for hardlinks."""
         args = parse_args()
@@ -66,7 +66,7 @@ class TestParseArgsHardlinks:
         assert args.command == "hardlinks"
         assert args.action == "list"
 
-    @patch("sys.argv", ["transmission-unlinked", "hardlinks", "--password", "pass", "--action", "delete"])
+    @patch("sys.argv", ["transmission-cleaner", "hardlinks", "--password", "pass", "--action", "delete"])
     def test_hardlinks_delete_action(self):
         """Should parse delete action for hardlinks."""
         args = parse_args()
@@ -78,7 +78,7 @@ class TestParseArgsHardlinks:
 class TestParseArgsErrors:
     """Tests for errors subcommand argument parsing."""
 
-    @patch("sys.argv", ["transmission-unlinked", "errors", "--password", "pass"])
+    @patch("sys.argv", ["transmission-cleaner", "errors", "--password", "pass"])
     def test_errors_minimal_args_with_defaults(self):
         """Should parse errors with just password and use default values."""
         args = parse_args()
@@ -92,7 +92,7 @@ class TestParseArgsErrors:
     @patch(
         "sys.argv",
         [
-            "transmission-unlinked",
+            "transmission-cleaner",
             "errors",
             "--password",
             "pass",
@@ -116,7 +116,7 @@ class TestParseArgsErrors:
         assert args.action == "delete"
         assert args.directory == "/data/tv"
 
-    @patch("sys.argv", ["transmission-unlinked", "errors", "--password", "pass", "--action", "interactive"])
+    @patch("sys.argv", ["transmission-cleaner", "errors", "--password", "pass", "--action", "interactive"])
     def test_errors_interactive_action(self):
         """Should parse interactive action for errors."""
         args = parse_args()
@@ -128,7 +128,7 @@ class TestParseArgsErrors:
 class TestParseArgsOrphans:
     """Tests for orphans subcommand argument parsing."""
 
-    @patch("sys.argv", ["transmission-unlinked", "orphans", "--password", "pass", "--dir", "/data/downloads"])
+    @patch("sys.argv", ["transmission-cleaner", "orphans", "--password", "pass", "--dir", "/data/downloads"])
     def test_orphans_minimal_args_with_defaults(self):
         """Should parse orphans with required directory."""
         args = parse_args()
@@ -142,7 +142,7 @@ class TestParseArgsOrphans:
     @patch(
         "sys.argv",
         [
-            "transmission-unlinked",
+            "transmission-cleaner",
             "orphans",
             "--password",
             "pass",
@@ -162,7 +162,7 @@ class TestParseArgsOrphans:
         assert args.include_hidden is True
         assert args.action == "delete"
 
-    @patch("sys.argv", ["transmission-unlinked", "orphans", "--password", "pass"])
+    @patch("sys.argv", ["transmission-cleaner", "orphans", "--password", "pass"])
     def test_orphans_missing_required_directory(self):
         """Should require directory argument for orphans."""
         with pytest.raises(SystemExit):
@@ -172,19 +172,19 @@ class TestParseArgsOrphans:
 class TestParseArgsCommon:
     """Tests for common argument parsing behavior."""
 
-    @patch("sys.argv", ["transmission-unlinked"])
+    @patch("sys.argv", ["transmission-cleaner"])
     def test_no_subcommand_shows_help(self):
         """Should exit when no subcommand provided."""
         with pytest.raises(SystemExit):
             parse_args()
 
-    @patch("sys.argv", ["transmission-unlinked", "hardlinks"])
+    @patch("sys.argv", ["transmission-cleaner", "hardlinks"])
     def test_missing_required_password(self):
         """Should require password argument."""
         with pytest.raises(SystemExit):
             parse_args()
 
-    @patch("sys.argv", ["transmission-unlinked", "hardlinks", "--password", "pass", "--action", "invalid"])
+    @patch("sys.argv", ["transmission-cleaner", "hardlinks", "--password", "pass", "--action", "invalid"])
     def test_invalid_action_rejected(self):
         """Should reject invalid action choices."""
         with pytest.raises(SystemExit):
@@ -192,7 +192,7 @@ class TestParseArgsCommon:
 
     @patch(
         "sys.argv",
-        ["transmission-unlinked", "hardlinks", "--password", "pass", "--settings-file", "/path/to/settings.json"],
+        ["transmission-cleaner", "hardlinks", "--password", "pass", "--settings-file", "/path/to/settings.json"],
     )
     def test_settings_file_option(self):
         """Should parse settings file path for alternate config."""
@@ -200,7 +200,7 @@ class TestParseArgsCommon:
 
         assert args.settings_file == "/path/to/settings.json"
 
-    @patch("sys.argv", ["transmission-unlinked", "invalid_command", "--password", "pass"])
+    @patch("sys.argv", ["transmission-cleaner", "invalid_command", "--password", "pass"])
     def test_invalid_subcommand_rejected(self):
         """Should reject invalid subcommand."""
         with pytest.raises(SystemExit):

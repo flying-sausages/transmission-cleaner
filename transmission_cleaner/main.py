@@ -59,7 +59,7 @@ def add_common_filter_args(parser):
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Transmission maintenance tool for hardlinks, errors, and orphaned files",
-        epilog="Note: All commands require authentication (--password). Use 'transmission-unlinked <command> --help' for command-specific options.",
+        epilog="Note: All commands require authentication (--password). Use 'transmission-cleaner <command> --help' for command-specific options.",
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
