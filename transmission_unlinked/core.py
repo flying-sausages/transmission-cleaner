@@ -31,6 +31,7 @@ def filter_torrents(
     torrents: list[Torrent],
     dir: str | None,
     tracker: str | None,
+    min_days: int = 7,
 ) -> list[Torrent]:
     # filter torrents to only have ones that are seeding or stopped
     torrents = [x for x in torrents if x.status == "seeding" or x.status == "stopped"]
@@ -47,6 +48,11 @@ def filter_torrents(
 
     if not dir and not tracker:
         print("No directory or tracker filters applied, processing all torrents")
+
+    # Filter torrents by minimum seeding days
+    min_seconds = min_days * 24 * 60 * 60
+    torrents = [x for x in torrents if x.seconds_seeding >= min_seconds]
+    print(f"Filtered to {len(torrents)} torrents with at least {min_days} days of active seeding")
 
     return torrents
 
