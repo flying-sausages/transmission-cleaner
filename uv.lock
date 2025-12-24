@@ -529,7 +529,7 @@ wheels = [
 
 [[package]]
 name = "transmission-cleaner"
-version = "1.0.0.dev3"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "transmission-rpc" },

@@ -1,6 +1,6 @@
 [project]
 name = "transmission-cleaner"
-version = "1.0.0.dev3"
+version = "1.0.0"
 description = "Transmission maintenance tool for managing torrents by hardlinks, errors, and orphaned files"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -15,6 +15,7 @@ A comprehensive CLI tool for maintaining your Transmission torrents.
 Unit tests ran against all of the following combinations
 - Python versions: 3.10 up to 3.14
 - OS: macOS, Linux, windows
+- Transmission v4
 
 ## Installation
 
