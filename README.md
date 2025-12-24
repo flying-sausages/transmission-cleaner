@@ -1,5 +1,9 @@
 # Transmission Cleaner
 
+[![PyPI - Version](https://img.shields.io/pypi/v/transmission-cleaner)](https://pypi.org/project/transmission-cleaner/)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/transmission-cleaner)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 A comprehensive CLI tool for maintaining your Transmission torrents.
 
 - 🔗 **Find torrents without hardlinks** - Identify torrents that aren't hardlinked to media libraries (Sonarr, Radarr, etc.)
