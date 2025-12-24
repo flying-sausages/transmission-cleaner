@@ -1,15 +1,16 @@
 """Torrent and file action processing functionality."""
 
 import pathlib
+from collections.abc import Mapping, Sequence
 
 from transmission_rpc import Client, Torrent
 
 
 def process_torrents(
     client: Client,
-    torrents: list[Torrent],
+    torrents: Sequence[Torrent],
     action: str | None,
-    cross_seed_map: dict[int, list[Torrent]] | None = None,
+    cross_seed_map: Mapping[int, Sequence[Torrent]] | None = None,
 ) -> int:
     """Process torrents based on the specified action.
 
@@ -83,7 +84,7 @@ def process_torrents(
 
 
 def process_orphaned_files(
-    orphaned_files: list[pathlib.Path],
+    orphaned_files: Sequence[pathlib.Path],
     action: str | None,
 ) -> int:
     """Process orphaned files based on the specified action.

@@ -2,6 +2,8 @@
 
 from unittest.mock import Mock, patch
 
+from transmission_rpc import Torrent
+
 from transmission_cleaner.actions import process_torrents
 
 
@@ -10,7 +12,7 @@ class TestProcessTorrents:
 
     def create_mock_torrent(self, name, torrent_id, total_size=1024**3):
         """Helper to create a mock torrent."""
-        torrent = Mock()
+        torrent = Mock(spec=Torrent)
         torrent.name = name
         torrent.id = torrent_id
         torrent.total_size = total_size  # Default to 1 GB
@@ -115,7 +117,7 @@ class TestProcessTorrents:
             self.create_mock_torrent("t1", 1),
             self.create_mock_torrent("t2", 2),
         ]
-        cross_seed_map = {1: [Mock()]}  # t1 is cross-seeded
+        cross_seed_map = {1: [Mock(spec=Torrent)]}  # t1 is cross-seeded
 
         result = process_torrents(client, torrents, "delete", cross_seed_map)
 
@@ -131,7 +133,7 @@ class TestProcessTorrents:
         """Interactive mode should protect cross-seeded torrents even if user chooses delete."""
         client = Mock()
         torrents = [self.create_mock_torrent("t1", 1)]
-        cross_seed_map = {1: [Mock()]}  # t1 is cross-seeded
+        cross_seed_map = {1: [Mock(spec=Torrent)]}  # t1 is cross-seeded
 
         # User chooses 'd' (delete with data)
         mock_input.return_value = "d"
