@@ -6,6 +6,11 @@ A comprehensive CLI tool for maintaining your Transmission torrents.
 - ‼️ **Manage errored torrents** - Find and clean up torrents with errors (unregistered, tracker issues, etc.)
 - 🗑️ **Detect orphaned files** - Discover files in your download directories that aren't tracked by any torrent
 
+## Support
+Unit tests ran against all of the following combinations
+- Python versions: 3.10 up to 3.14
+- OS: macOS, Linux, windows
+
 ## Installation
 
 ### Quick Install (Recommended)
