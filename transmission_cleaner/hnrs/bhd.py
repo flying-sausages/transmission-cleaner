@@ -4,7 +4,8 @@ from transmission_rpc import Torrent
 def is_outside_hnr(torrent: Torrent) -> bool:
     """Determine if a torrent is outside of HNR criteria for BHD.
 
-    Args:        torrent: The torrent to check
+    Args:
+        torrent: The torrent to check
 
     Returns:
         False if deleting would incur HNR, True if it's safe to delete without HNR risk
