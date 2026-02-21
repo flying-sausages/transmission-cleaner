@@ -16,6 +16,7 @@ class TestProcessTorrents:
         torrent.name = name
         torrent.id = torrent_id
         torrent.total_size = total_size  # Default to 1 GB
+        torrent.is_private = False
         return torrent
 
     @patch("builtins.print")
