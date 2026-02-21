@@ -19,6 +19,16 @@ class TestProcessTorrents:
         torrent.is_private = False
         return torrent
 
+    def create_mock_torrent_private(self, *args, **kwargs):
+        torrent = self.create_mock_torrent("t1", 1)
+        torrent.is_private = True
+        torrent.ratio = 0.67
+        torrent.seconds_seeding = 123123
+        tracker = Mock(spec=Tracker)
+        tracker.announce = "https://landof.tv/asdasdasdasdasd"
+        torrent.trackers = [tracker]
+        return torrent
+
     @patch("builtins.print")
     def test_list_action_does_not_remove(self, mock_print):
         """List action should display torrents without removing them."""
@@ -146,22 +156,29 @@ class TestProcessTorrents:
 
     @patch("builtins.print")
     @patch("builtins.input")
-    def test_interactive_mode_protects_hnr_on_remove(self, mock_input, mock_print):
+    def test_protects_hnr_interactive(self, mock_input, mock_print):
         """Interactive mode should protect torrents with HNR violations even if user chooses remove."""
         client = Mock()
-        torrent = self.create_mock_torrent("t1", 1)
-        torrent.is_private = True
-        torrent.ratio = 0.67
-        torrent.seconds_seeding = 123123
-        tracker = Mock(spec=Tracker)
-        tracker.announce = "landof.tv"
-        torrent.trackers = [tracker]
+        torrent = self.create_mock_torrent_private()
         cross_seed_map = {}
-        check_hnr = Mock(return_value=["HNR violation"])
-        mock_input.return_value = "r"
 
-        result = process_torrents(client, [torrent], None, cross_seed_map, check_hnr)
+        result = process_torrents(client, [torrent], "r", cross_seed_map, True)
 
-        # Should remove without data due to HNR protection
-        client.remove_torrent.assert_not_called()
-        assert result == 0  # Torrent with HNR violations was protected
+        for response in ["r", "d"]:
+            mock_input.return_value = response
+            result = process_torrents(client, [torrent], None, cross_seed_map, check_hnrs=True)
+            client.remove_torrent.assert_not_called()
+            assert result == 0  # Torrent with HNR violations was protected
+
+    @patch("builtins.print")
+    @patch("builtins.input")
+    def test_protects_hnr_direct(self, mock_input, mock_print):
+        """Interactive mode should protect torrents with HNR violations even if user chooses remove."""
+        client = Mock()
+        torrent = self.create_mock_torrent_private()
+        cross_seed_map = {}
+
+        for response in ["r", "d"]:
+            result = process_torrents(client, [torrent], response, cross_seed_map, check_hnrs=True)
+            client.remove_torrent.assert_not_called()
+            assert result == 0  # Torrent with HNR violations was protected
