@@ -1,4 +1,5 @@
 from typing import Callable
+from urllib.parse import urlparse
 
 from transmission_rpc import Torrent
 
@@ -16,7 +17,8 @@ def check_hnr(torrent: Torrent) -> list[str]:
     """Checks against known HNR rules for private trackers. Returns a list of violating trackers; returns an empty list if no matching tracker is found or no violations occur."""
     violations: list[str] = []
     for tracker in torrent.trackers:
-        if tracker.announce in hnr_map:
+        domain = urlparse(tracker.announce).netloc
+        if domain in hnr_map:
             hnr_check = hnr_map[tracker.announce]
             if not hnr_check(torrent):
                 violations.append(tracker.announce)
