@@ -39,7 +39,7 @@ def process_torrents(
                 hnr = f" [HNR violations: {', '.join(violations)}]"
             cross_status = " [CROSS-SEEDED]" if torrent.id in cross_seed_map else ""
             size_gb = torrent.total_size / (1024**3)
-            print(f"  - {cross_status}{hnr}{torrent.name} ({size_gb:.2f} GB)")
+            print(f"  - {torrent.name}{cross_status}{hnr} ({size_gb:.2f} GB)")
 
     elif action in ["delete", "d"]:
         for torrent in torrents:
@@ -60,9 +60,9 @@ def process_torrents(
     elif action in ["remove", "r"]:
         for torrent in torrents:
             if torrent.is_private and check_hnrs and (violations := check_hnr(torrent)):
-                # Private torrent with HNR violations: protect data, remove torrent only
-                print(f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(violations)}), skipping remove")
-                client.remove_torrent(torrent.id, delete_data=False)
+                # Private torrent with HNR violations: keep torrent seeding, do not remove
+                print(f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(violations)}), keeping torrent (skipping remove)")
+                continue
             print(f"[ACTION] {torrent.name}: Removing without data")
             client.remove_torrent(torrent.id, delete_data=False)
 

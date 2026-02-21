@@ -2,7 +2,7 @@ from transmission_rpc import Torrent
 
 
 def is_outside_hnr(torrent: Torrent) -> bool:
-    """Determine if a torrent is outside of HNR criteria for PTP.
+    """Determine if a torrent is outside of HNR criteria for TVCUK.
 
     Args:        torrent: The torrent to check
 

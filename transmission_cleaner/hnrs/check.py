@@ -1,6 +1,6 @@
 from typing import Callable
 
-from transmission_rpc.torrent import Torrent
+from transmission_rpc import Torrent
 
 import transmission_cleaner.hnrs as hnrs
 
@@ -13,7 +13,7 @@ hnr_map: dict[str, Callable] = {
 
 
 def check_hnr(torrent: Torrent) -> list[str]:
-    """Checks against known HNR rules for private trackers. Returns False if no matching tracker is found, or a list of violating trackers."""
+    """Checks against known HNR rules for private trackers. Returns a list of violating trackers; returns an empty list if no matching tracker is found or no violations occur."""
     violations: list[str] = []
     for tracker in torrent.trackers:
         if tracker.announce in hnr_map:
@@ -21,5 +21,5 @@ def check_hnr(torrent: Torrent) -> list[str]:
             if not hnr_check(torrent):
                 violations.append(tracker.announce)
         else:
-            print(f"[WARN] Torrent markes as private but '{tracker.announce}' HNR rules not known. Make a simple PR ")
+            print(f"[WARN] Torrent marked as private but '{tracker.announce}' HNR rules not known. Make a simple PR ")
     return violations

@@ -15,7 +15,7 @@ def is_outside_hnr(torrent: Torrent) -> bool:
     3) You must meet the minimum seed time OR ratio requirements within 2 weeks of starting the download.
     """
     # Any torrent
-    if torrent.ratio > 1:
+    if torrent.ratio >= 1:
         return True
     # Single episodes require 24hrs seed
     if torrent.file_count == 1:
