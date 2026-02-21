@@ -19,9 +19,9 @@ def check_hnr(torrent: Torrent) -> list[str]:
     for tracker in torrent.trackers:
         domain = urlparse(tracker.announce).netloc
         if domain in hnr_map:
-            hnr_check = hnr_map[tracker.announce]
+            hnr_check = hnr_map[domain]
             if not hnr_check(torrent):
-                violations.append(tracker.announce)
+                violations.append(domain)
         else:
-            print(f"[WARN] Torrent marked as private but '{tracker.announce}' HNR rules not known. Make a simple PR ")
+            print(f"[WARN] Torrent marked as private but '{domain}' HNR rules not known. Make a simple PR ")
     return violations
