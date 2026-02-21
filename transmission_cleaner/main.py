@@ -80,6 +80,11 @@ def parse_args():
             "remove/r: remove torrent from client only"
         ),
     )
+    hardlinks_parser.add_argument(
+        "--skip-hnr",
+        action="store_true",
+        help="Disable the HNR check for private torrents (default: False)",
+    )
     add_common_auth_args(hardlinks_parser)
 
     # Errors subcommand
@@ -163,7 +168,8 @@ def handle_hardlinks(client, args):
 
     # Normalize action for interactive mode
     action = args.action if args.action not in ["interactive", "i"] else None
-    bytes_freed = process_torrents(client, without_hardlinks, action)
+    check_hnrs = not bool(args.skip_hnr)
+    bytes_freed = process_torrents(client, without_hardlinks, action, None, check_hnrs)
 
     # Print summary if any space was freed
     if bytes_freed > 0:

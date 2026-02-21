@@ -68,7 +68,7 @@ transmission-cleaner hardlinks --username USER --password PASSWORD
 - `-t, --tracker` - Filter by announce URL (substring match)
 - `--min-days` - Minimum days of active seeding (default: 7)
 - `--action` - Action to perform: `list` (default), `interactive`, `delete` (with data), `remove` (torrent only)
-- `--skip-hnr-check` - Skip HNR check for private torrents (allows deletion even if HNR would be violated)
+- `--skip-hnr` - Skip HNR check for private torrents (allows deletion even if HNR would be violated)
 
 ### 2. Errors Command
 
