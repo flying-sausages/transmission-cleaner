@@ -87,7 +87,13 @@ def process_torrents(
                 print(f"[ACTION] {torrent.name}: Removing without data")
                 client.remove_torrent(torrent.id, delete_data=False)
             elif choice == "d":
-                if torrent.id in cross_seed_map:
+                if violations:
+                    # Private torrent with HNR violations: keep torrent seeding, do not delete data
+                    print(
+                        f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(violations)}), keeping torrent and data"
+                    )
+                    continue
+                elif torrent.id in cross_seed_map:
                     # Cross-seeded: protect data even if user wants to delete
                     print(f"[PROTECTED] {torrent.name}: Cross-seeded, removing torrent only (keeping data)")
                     client.remove_torrent(torrent.id, delete_data=False)
