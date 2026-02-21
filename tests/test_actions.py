@@ -25,7 +25,7 @@ class TestProcessTorrents:
         torrent.ratio = 0.67
         torrent.seconds_seeding = 123123
         tracker = Mock(spec=Tracker)
-        tracker.announce = "https://landof.tv/asdasdasdasdasd"
+        tracker.announce = "https://landof.tv:3232/asdasdasdasdasd"
         torrent.trackers = [tracker]
         return torrent
 
