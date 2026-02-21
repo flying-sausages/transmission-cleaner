@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Callable
 from urllib.parse import urlparse
 
@@ -13,15 +14,30 @@ hnr_map: dict[str, Callable] = {
 }
 
 
-def check_hnr(torrent: Torrent) -> list[str]:
+@dataclass
+class CheckHNRResult:
+    violations: list[str]
+    unknowns: list[str]
+
+    def __bool__(self) -> bool:
+        return bool(self.violations) or bool(self.unknowns)
+
+    def get_unknowns(self) -> str:
+        if self.unknowns:
+            return f"  [INFO] No HNR rules for trackers: {', '.join(self.unknowns)}"
+        return ""
+
+
+def check_hnr(torrent: Torrent) -> CheckHNRResult:
     """Checks against known HNR rules for private trackers. Returns a list of violating trackers; returns an empty list if no matching tracker is found or no violations occur."""
     violations: list[str] = []
+    unknowns: list[str] = []
     for tracker in torrent.trackers:
-        domain = urlparse(tracker.announce).hostname
+        domain = str(urlparse(tracker.announce).hostname)
         if domain in hnr_map:
             hnr_check = hnr_map[domain]
             if not hnr_check(torrent):
                 violations.append(domain)
         else:
-            print(f"[WARN] Torrent marked as private but '{domain}' HNR rules not known. Make a quick PR ;)")
-    return violations
+            unknowns.append(domain)
+    return CheckHNRResult(violations, unknowns)
