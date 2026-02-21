@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-from transmission_rpc import Torrent
+from transmission_rpc import Torrent, Tracker
 
 from transmission_cleaner.actions import process_torrents
 
@@ -143,3 +143,25 @@ class TestProcessTorrents:
         # Should remove without data due to cross-seed protection
         client.remove_torrent.assert_called_with(1, delete_data=False)
         assert result == 0  # Cross-seeded torrent was protected
+
+    @patch("builtins.print")
+    @patch("builtins.input")
+    def test_interactive_mode_protects_hnr_on_remove(self, mock_input, mock_print):
+        """Interactive mode should protect torrents with HNR violations even if user chooses remove."""
+        client = Mock()
+        torrent = self.create_mock_torrent("t1", 1)
+        torrent.is_private = True
+        torrent.ratio = 0.67
+        torrent.seconds_seeding = 123123
+        tracker = Mock(spec=Tracker)
+        tracker.announce = "landof.tv"
+        torrent.trackers = [tracker]
+        cross_seed_map = {}
+        check_hnr = Mock(return_value=["HNR violation"])
+        mock_input.return_value = "r"
+
+        result = process_torrents(client, [torrent], None, cross_seed_map, check_hnr)
+
+        # Should remove without data due to HNR protection
+        client.remove_torrent.assert_not_called()
+        assert result == 0  # Torrent with HNR violations was protected
