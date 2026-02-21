@@ -99,9 +99,6 @@ def process_torrents(
                     # Cross-seeded: protect data even if user wants to delete
                     print(f"[PROTECTED] {torrent.name}: Cross-seeded, removing torrent only (keeping data)")
                     client.remove_torrent(torrent.id, delete_data=False)
-                    # Private torrent with HNR violations: keep torrent seeding
-                    print(f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(violations)}), keeping torrent")
-                    client.remove_torrent(torrent.id, delete_data=False)
                 else:
                     # Not cross-seeded: safe to delete data
                     size_gb = torrent.total_size / (1024**3)
