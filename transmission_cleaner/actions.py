@@ -61,7 +61,9 @@ def process_torrents(
         for torrent in torrents:
             if torrent.is_private and check_hnrs and (violations := check_hnr(torrent)):
                 # Private torrent with HNR violations: keep torrent seeding, do not remove
-                print(f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(violations)}), keeping torrent (skipping remove)")
+                print(
+                    f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(violations)}), keeping torrent (skipping remove)"
+                )
                 continue
             print(f"[ACTION] {torrent.name}: Removing without data")
             client.remove_torrent(torrent.id, delete_data=False)
