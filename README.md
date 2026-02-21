@@ -10,12 +10,12 @@ A comprehensive CLI tool for maintaining your Transmission torrents.
 - 🔗 **Find torrents without hardlinks** - Identify torrents that aren't hardlinked to media libraries (Sonarr, Radarr, etc.)
 - ‼️ **Manage errored torrents** - Find and clean up torrents with errors (unregistered, tracker issues, etc.)
 - 🗑️ **Detect orphaned files** - Discover files in your download directories that aren't tracked by any torrent
+- 🛡️ **Protections** - Checks for cross-seeding and HNR violations for private torrents (PTP, BTN, BHD, TVCUK)
 
 ## Support
 Unit tests ran against all of the following combinations
 - Python versions: 3.10 up to 3.14
 - OS: macOS, Linux, windows
-- Transmission v4
 
 ## Installation
 
@@ -68,6 +68,7 @@ transmission-cleaner hardlinks --username USER --password PASSWORD
 - `-t, --tracker` - Filter by announce URL (substring match)
 - `--min-days` - Minimum days of active seeding (default: 7)
 - `--action` - Action to perform: `list` (default), `interactive`, `delete` (with data), `remove` (torrent only)
+- `--skip-hnr-check` - Skip HNR check for private torrents (allows deletion even if HNR would be violated)
 
 ### 2. Errors Command
 
