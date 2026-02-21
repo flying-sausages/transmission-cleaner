@@ -17,7 +17,7 @@ def check_hnr(torrent: Torrent) -> list[str]:
     """Checks against known HNR rules for private trackers. Returns a list of violating trackers; returns an empty list if no matching tracker is found or no violations occur."""
     violations: list[str] = []
     for tracker in torrent.trackers:
-        domain = urlparse(tracker.announce).netloc
+        domain = urlparse(tracker.announce).hostname
         if domain in hnr_map:
             hnr_check = hnr_map[domain]
             if not hnr_check(torrent):
