@@ -23,5 +23,5 @@ def check_hnr(torrent: Torrent) -> list[str]:
             if not hnr_check(torrent):
                 violations.append(domain)
         else:
-            print(f"[WARN] Torrent marked as private but '{domain}' HNR rules not known. Make a simple PR ")
+            print(f"[WARN] Torrent marked as private but '{domain}' HNR rules not known. Make a quick PR ;)")
     return violations

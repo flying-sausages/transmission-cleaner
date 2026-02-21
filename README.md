@@ -194,3 +194,6 @@ uv run pytest
 # Run tests with coverage
 uv run pytest --cov
 ```
+
+#### HNRs
+There's a [template](transmission_cleaner/hnrs/_template.py) for HNR checks for private trackers. You can consult the [README.md](transmission_cleaner/hnrs/README.md) in that directory for instructions on how to add new templates.
