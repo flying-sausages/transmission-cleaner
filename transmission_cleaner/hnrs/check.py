@@ -24,7 +24,7 @@ class CheckHNRResult:
 
     def get_unknowns(self) -> str:
         if self.unknowns:
-            return f"  [INFO] No HNR rules for trackers: {', '.join(self.unknowns)}"
+            return f"  [WARN] HNR rules unknown for trackers: {', '.join(self.unknowns)}, please make a PR ;)"
         return ""
 
 
