@@ -74,7 +74,7 @@ class TestProcessTorrents:
         torrents = [create_mock_torrent("t1", 1)]
         mock_input.return_value = "r"
 
-        _ = process_torrents(client, torrents, None)
+        _ = process_torrents(client, torrents, "interactive")
 
         client.remove_torrent.assert_called_with(1, delete_data=False)
 
@@ -86,7 +86,7 @@ class TestProcessTorrents:
         torrents = [create_mock_torrent("t1", 1)]
         mock_input.return_value = "d"
 
-        result = process_torrents(client, torrents, None)
+        result = process_torrents(client, torrents, "interactive")
 
         client.remove_torrent.assert_called_with(1, delete_data=True)
         assert result == 1024**3  # Should return 1 GB
@@ -99,7 +99,7 @@ class TestProcessTorrents:
         torrents = [create_mock_torrent("t1", 1)]
         mock_input.return_value = "n"
 
-        result = process_torrents(client, torrents, None)
+        result = process_torrents(client, torrents, "interactive")
 
         client.remove_torrent.assert_not_called()
         assert result == 0  # Skip doesn't free space
@@ -150,7 +150,7 @@ class TestProcessTorrents:
 
         # User chooses 'd' (delete with data)
         mock_input.return_value = "d"
-        result = process_torrents(client, torrents, None, cross_seed_map)
+        result = process_torrents(client, torrents, "interactive", cross_seed_map)
 
         # Should remove without data due to cross-seed protection
         client.remove_torrent.assert_called_with(1, delete_data=False)
@@ -170,7 +170,7 @@ class TestProcessTorrentsWithHnr:
 
         for response in ["r", "d"]:
             mock_input.return_value = response
-            result = process_torrents(client, [torrent], None, cross_seed_map, check_hnrs=True)
+            result = process_torrents(client, [torrent], "interactive", cross_seed_map, check_hnrs=True)
             client.remove_torrent.assert_not_called()
             assert result == 0  # Torrent with HNR violations was protected
 
@@ -198,7 +198,7 @@ class TestProcessTorrentsWithHnr:
 
         for response in ["r", "d"]:
             mock_input.return_value = response
-            result = process_torrents(client, [torrent], None, cross_seed_map, check_hnrs=True)
+            result = process_torrents(client, [torrent], "interactive", cross_seed_map, check_hnrs=True)
             client.remove_torrent.assert_not_called()
             assert result == 0  # Torrent with HNR violations was protected
 
