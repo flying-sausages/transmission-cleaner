@@ -40,7 +40,7 @@ def process_torrents(
             size_gb = torrent.total_size / (1024**3)
             print(f"  - {torrent.name}{cross_status}{hnr} ({size_gb:.2f} GB)")
             if warns := ret.get_unknown_str():
-                print("^  " + warns)
+                print("    ^ " + warns)
 
     elif action in ["delete", "d"]:
         for torrent in torrents:
