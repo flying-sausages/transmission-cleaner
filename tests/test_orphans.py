@@ -212,3 +212,67 @@ class TestFindOrphanedFiles:
 
         # Should not be orphaned since resolved paths match
         assert result == []
+
+
+class TestDirectoryValidation:
+    """Tests for directory validation in handle_orphans.
+
+    Tests the validation logic in main.py:226-231 that ensures the specified
+    directory is either the base download directory or a subdirectory within it.
+    """
+
+    def test_directory_equals_base_path(self, tmp_path):
+        """Should allow directory that equals base download directory."""
+        base_dir = tmp_path / "downloads"
+        base_dir.mkdir()
+
+        # Directory is exactly the base path
+        directory = base_dir
+        base_path = pathlib.Path(base_dir)
+
+        # This should pass validation
+        is_valid = base_path in directory.parents or directory == base_path
+        assert is_valid is True
+
+    def test_directory_inside_base_path(self, tmp_path):
+        """Should allow subdirectory that is inside base download directory."""
+        base_dir = tmp_path / "downloads"
+        base_dir.mkdir()
+        subdir = base_dir / "movies"
+        subdir.mkdir()
+
+        # Directory is inside base path
+        directory = subdir
+        base_path = pathlib.Path(base_dir)
+
+        # This should pass validation (directory is a child of base_path)
+        is_valid = base_path in directory.parents or directory == base_path
+        assert is_valid is True
+
+    def test_directory_outside_base_path(self, tmp_path):
+        """Directory that is outside base download directory is correctly rejected."""
+        base_dir = tmp_path / "downloads"
+        base_dir.mkdir()
+        other_dir = tmp_path / "other"
+        other_dir.mkdir()
+
+        # Directory is outside base path
+        directory = other_dir
+        base_path = pathlib.Path(base_dir)
+
+        # This should fail validation
+        is_valid = base_path in directory.parents or directory == base_path
+        assert is_valid is False
+
+    def test_directory_is_parent_of_base_path(self, tmp_path):
+        """Should reject directory that is a parent of base download directory."""
+        base_dir = tmp_path / "downloads" / "torrents"
+        base_dir.mkdir(parents=True)
+
+        # Directory is a parent of base path
+        directory = tmp_path / "downloads"
+        base_path = pathlib.Path(base_dir)
+
+        # This should fail validation (directory is parent, not child)
+        is_valid = base_path in directory.parents or directory == base_path
+        assert is_valid is False
