@@ -33,6 +33,7 @@ def process_torrents(
 
     # Handle action based on argument
     if action in ["list", "l"]:
+        removable_bits = 0
         for torrent in torrents:
             ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
             hnr = f" [HNR violations: {', '.join(ret.violations)}]" if ret.violations else ""
@@ -42,6 +43,12 @@ def process_torrents(
             if warns := ret.get_unknown_str():
                 print("    ^ " + warns)
 
+            if not check_hnrs or not torrent.is_private or not ret.violations:
+                # Only count size towards removable total if it doesn't have HNR violations
+                removable_bits += torrent.total_size
+        print(
+            f"\nSize of all torrents that could be removed (duplicates not accounted for): {removable_bits / (1024**3):.2f} GB"
+        )
     elif action in ["delete", "d"]:
         for torrent in torrents:
             if torrent.id in cross_seed_map:
