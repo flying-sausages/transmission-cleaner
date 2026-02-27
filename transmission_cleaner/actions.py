@@ -44,7 +44,7 @@ def process_torrents(
     """
     cross_seed_map = cross_seed_map or {}
     total_space_freed = 0
-
+    torrents = sorted(torrents, key=lambda t: t.name.lower())
     # Handle action based on argument
     if action in ["delete", "d", "remove", "r"]:
         for torrent in torrents:
