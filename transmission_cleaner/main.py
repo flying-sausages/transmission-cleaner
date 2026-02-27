@@ -2,6 +2,8 @@ import argparse
 import signal
 import sys
 
+from transmission_rpc.client import Client
+
 from transmission_cleaner.actions import process_torrents
 from transmission_cleaner.client import create_client, get_client_config
 from transmission_cleaner.filters import filter_torrents
@@ -158,7 +160,7 @@ def parse_args():
     return args
 
 
-def handle_hardlinks(client, args):
+def handle_hardlinks(client: Client, args):
     """Handle the hardlinks subcommand."""
 
     from transmission_cleaner.checkers.hardlinks import get_torrents_without_hardlinks
@@ -186,7 +188,7 @@ def handle_hardlinks(client, args):
         print(f"\n[INFO]   Total disk space freed: {space_freed_gb:.2f} GB")
 
 
-def handle_errors(client, args):
+def handle_errors(client: Client, args):
     """Handle the errors subcommand."""
     from transmission_cleaner.checkers.errors import check_cross_seeding, get_torrents_with_errors
 
@@ -230,7 +232,7 @@ def handle_errors(client, args):
         print(f"\n[INFO]   Total disk space freed: {space_freed_gb:.2f} GB")
 
 
-def handle_orphans(client, args):
+def handle_orphans(client: Client, args):
     """Handle the orphans subcommand."""
     import pathlib
 
@@ -240,6 +242,13 @@ def handle_orphans(client, args):
     directory = pathlib.Path(args.directory)
     if not directory.exists():
         print(f"[ERROR]  Directory not found: {directory}")
+        sys.exit(1)
+
+    # Check that the path passed as directory is inside the base_dir
+    base_dir = client.get_session().download_dir
+    base_path = pathlib.Path(base_dir)
+    if not (base_path in directory.parents or directory == base_path):
+        print(f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {base_dir}")
         sys.exit(1)
 
     print(f"[INFO]   Scanning directory: {directory}")
