@@ -102,7 +102,7 @@ def process_torrents(
                 print(warns)
 
             prompt = f"[PROMPT] {torrent.name}{cross_status}\n         Remove torrent? [N(o)/r(emove)/d(ata)] "
-            choice = input(prompt).strip().lower() or "n"
+            choice = input(prompt).strip().lower()[0] or "n"
 
             if choice == "r":
                 remove_torrent(client, torrent)
