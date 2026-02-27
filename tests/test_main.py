@@ -151,6 +151,7 @@ class TestParseArgsOrphans:
             "--include-hidden",
             "--action",
             "delete",
+            "--skip-disjoint",
         ],
     )
     def test_orphans_with_all_options(self):
@@ -161,6 +162,15 @@ class TestParseArgsOrphans:
         assert args.directory == "/data/downloads"
         assert args.include_hidden is True
         assert args.action == "delete"
+        assert args.skip_disjoint is True
+
+    @patch("sys.argv", ["transmission-cleaner", "orphans", "--password", "pass", "--dir", "/data"])
+    def test_orphans_skip_disjoint_defaults_to_false(self):
+        """Should default skip_disjoint to False when not specified."""
+        args = parse_args()
+
+        assert args.command == "orphans"
+        assert args.skip_disjoint is False
 
     @patch("sys.argv", ["transmission-cleaner", "orphans", "--password", "pass"])
     def test_orphans_missing_required_directory(self):
