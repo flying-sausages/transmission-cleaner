@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 
 from transmission_rpc import Client, Torrent
 
-from transmission_cleaner.hnrs.check import CheckHNRResult, check_hnr
+from transmission_cleaner.hnrs.check import CheckHnrResult, get_hnrs
 
 
 def process_torrents(
@@ -34,16 +34,13 @@ def process_torrents(
     # Handle action based on argument
     if action in ["list", "l"]:
         for torrent in torrents:
-            hnr = ""
-            warns = ""
-            if torrent.is_private and check_hnrs and (ret := check_hnr(torrent)):
-                hnr = f" [HNR violations: {', '.join(ret.violations)}]"
-                warns = ret.get_unknowns()
+            ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
+            hnr = f" [HNR violations: {', '.join(ret.violations)}]" if ret.violations else ""
             cross_status = " [CROSS-SEEDED]" if torrent.id in cross_seed_map else ""
             size_gb = torrent.total_size / (1024**3)
             print(f"  - {torrent.name}{cross_status}{hnr} ({size_gb:.2f} GB)")
-            if warns:
-                print(warns)
+            if warns := ret.get_unknown_str():
+                print("^  " + warns)
 
     elif action in ["delete", "d"]:
         for torrent in torrents:
@@ -51,11 +48,11 @@ def process_torrents(
                 # Cross-seeded: protect data, remove torrent only
                 print(f"[PROTECTED] {torrent.name}: Cross-seeded, removing torrent only (keeping data)")
                 client.remove_torrent(torrent.id, delete_data=False)
-            elif torrent.is_private and check_hnrs and (ret := check_hnr(torrent)):
+            elif torrent.is_private and check_hnrs and (ret := get_hnrs(torrent)):
                 # Private torrent with HNR violations: protect torrent and data, skipping deletion to keep seeding
                 print(f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(ret.violations)}), skipping delete")
-                if warns := ret.get_unknowns():
-                    print(warns)
+                if warns := ret.get_unknown_str():
+                    print("^  " + warns)
             else:
                 # Not cross-seeded: safe to delete data
                 size_gb = torrent.total_size / (1024**3)
@@ -65,15 +62,15 @@ def process_torrents(
 
     elif action in ["remove", "r"]:
         for torrent in torrents:
-            if torrent.is_private and check_hnrs and (ret := check_hnr(torrent)):
-                # Private torrent with HNR violations: keep torrent seeding, do not remove
-                print(
-                    f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(ret.violations)}), keeping torrent (skipping remove)"
-                )
-                if warns := ret.get_unknowns():
+            ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
+            if torrent.is_private and check_hnrs:
+                if ret.violations:
+                    print(
+                        f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(ret.violations)}), keeping torrent (skipping remove)"
+                    )
+                    continue
+                if warns := ret.get_unknown_str():
                     print(warns)
-
-                continue
             print(f"[ACTION] {torrent.name}: Removing without data")
             client.remove_torrent(torrent.id, delete_data=False)
 
@@ -81,16 +78,16 @@ def process_torrents(
         # Interactive mode
         for torrent in torrents:
             cross_status = " [CROSS-SEEDED]" if torrent.id in cross_seed_map else ""
-            ret = check_hnr(torrent) if torrent.is_private and check_hnrs else CheckHNRResult([], [])
+            ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
             hnr = f" [HNR violations: {', '.join(ret.violations)}]" if ret.violations else ""
+            if warns := ret.get_unknown_str():
+                print(warns)
             choice = (
                 input(f"[PROMPT] {torrent.name}{cross_status}{hnr}\n         Remove torrent? [N(o)/r(emove)/d(ata)] ")
                 .strip()
                 .lower()
                 or "n"
             )
-            if warns := ret.get_unknowns():
-                print(warns)
 
             if choice == "r":
                 if ret.violations:

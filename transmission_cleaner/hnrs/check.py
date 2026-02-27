@@ -15,21 +15,24 @@ hnr_map: dict[str, Callable] = {
 
 
 @dataclass
-class CheckHNRResult:
+class CheckHnrResult:
     violations: list[str]
+    """List of announce addresses for which a HNR would be incurred if the torrent were removed."""
     unknowns: list[str]
+    """List of announce addresses for which no HNR rules are known, and thus no check was performed."""
 
-    def __bool__(self) -> bool:
-        return bool(self.violations) or bool(self.unknowns)
-
-    def get_unknowns(self) -> str:
+    def get_unknown_str(self) -> str:
         if self.unknowns:
-            return f"  [WARN] HNR rules unknown for trackers: {', '.join(self.unknowns)}, please make a PR ;)"
+            return f"[WARN] HNR rules unknown for trackers: {', '.join(self.unknowns)}, please make a PR ;)"
         return ""
 
+    @classmethod
+    def empty(cls):
+        return cls([], [])
 
-def check_hnr(torrent: Torrent) -> CheckHNRResult:
-    """Checks against known HNR rules for private trackers. Returns a list of violating trackers; returns an empty list if no matching tracker is found or no violations occur."""
+
+def get_hnrs(torrent: Torrent) -> CheckHnrResult:
+    """Checks against known HNR rules for private trackers."""
     violations: list[str] = []
     unknowns: list[str] = []
     for tracker in torrent.trackers:
@@ -40,4 +43,4 @@ def check_hnr(torrent: Torrent) -> CheckHNRResult:
                 violations.append(domain)
         else:
             unknowns.append(domain)
-    return CheckHNRResult(violations, unknowns)
+    return CheckHnrResult(violations, unknowns)
