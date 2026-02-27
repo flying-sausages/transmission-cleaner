@@ -35,18 +35,16 @@ def get_hnrs(torrent: Torrent) -> CheckHnrResult:
     """Checks against known HNR rules for private trackers."""
     violations: list[str] = []
     unknowns: list[str] = []
-    seen_violations: set[str] = set()
-    seen_unknowns: set[str] = set()
+    seen_domains: set[str] = set()
     for tracker in torrent.trackers:
         domain = urlparse(tracker.announce).hostname
-        if domain is None:
+        if domain is None or domain in seen_domains:
             continue
+        seen_domains.add(domain)
         if domain in hnr_map:
             hnr_check = hnr_map[domain]
-            if not hnr_check(torrent) and domain not in seen_violations:
+            if not hnr_check(torrent):
                 violations.append(domain)
-                seen_violations.add(domain)
-        elif domain not in seen_unknowns:
+        else:
             unknowns.append(domain)
-            seen_unknowns.add(domain)
     return CheckHnrResult(violations, unknowns)
