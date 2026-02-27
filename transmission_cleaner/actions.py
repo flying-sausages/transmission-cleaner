@@ -34,7 +34,8 @@ def process_torrents(
     Args:
         client: Transmission RPC client
         torrents: List of torrents to process
-        action: Action to perform - None (interactive), "list"/"l", "delete"/"d", "remove"/"r"
+        action: Action to perform - "delete"/"d" or "remove"/"r" to remove torrents, "interactive"/"i" for
+            interactive mode; any other value results in list mode (no changes, just reporting).
         cross_seed_map: Optional dict mapping torrent IDs to list of cross-seeding torrents.
                        If provided, protects cross-seeded torrents from data deletion.
         check_hnrs: Whether to check HNR status for private torrents before performing actions.
@@ -85,7 +86,8 @@ def process_torrents(
                 print(warns)
 
             prompt = f"[PROMPT] {torrent.name}{cross_status}\n         Remove torrent? [N(o)/r(emove)/d(ata)] "
-            choice = input(prompt).strip().lower()[0] or "n"
+            user_input = input(prompt).strip().lower()
+            choice = user_input[0] if user_input else "n"
 
             if choice == "r":
                 remove_torrent(client, torrent)
@@ -94,7 +96,7 @@ def process_torrents(
                 if torrent.id in cross_seed_map:
                     # Cross-seeded: protect data even if user wants to delete
                     print(f"[PROTECTED] {torrent.name}: Cross-seeded, removing torrent only (keeping data)")
-                    client.remove_torrent(torrent.id, delete_data=False)
+                    remove_torrent(client, torrent)
                 else:
                     # Not cross-seeded: safe to delete data
                     total_space_freed += delete_torrent(client, torrent)

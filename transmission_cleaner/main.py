@@ -166,7 +166,7 @@ def handle_hardlinks(client, args):
 
     print(f"[INFO]   Found {len(without_hardlinks)} torrents without hardlinks")
 
-    # Normalize action for interactive mode
+    # Determine whether to check hit-and-run status based on the skip_hnr flag
     check_hnrs = not bool(args.skip_hnr)
     bytes_freed = process_torrents(client, without_hardlinks, args.action, None, check_hnrs)
 
