@@ -185,3 +185,31 @@ class TestProcessTorrentsWithHnr:
             result = process_torrents(client, [torrent], response, cross_seed_map, check_hnrs=True)
             client.remove_torrent.assert_not_called()
             assert result == 0  # Torrent with HNR violations was protected
+
+    @patch("builtins.print")
+    @patch("builtins.input")
+    def test_deletes_hnr_interactive(self, mock_input, mock_print):
+        """Interactive mode should delete torrents without HNRs"""
+        client = Mock()
+        torrent = create_mock_torrent_private()
+        cross_seed_map = {}
+
+        result = process_torrents(client, [torrent], "r", cross_seed_map, True)
+
+        for response in ["r", "d"]:
+            mock_input.return_value = response
+            result = process_torrents(client, [torrent], None, cross_seed_map, check_hnrs=True)
+            client.remove_torrent.assert_not_called()
+            assert result == 0  # Torrent with HNR violations was protected
+
+    @patch("builtins.print")
+    def test_deletes_hnr_direct(self, mock_print):
+        """Direct mode should delete torrents without HNRs"""
+        torrent = create_mock_torrent_private()
+        torrent.ratio = 120
+        cross_seed_map = {}
+
+        for response in ["r", "d"]:
+            client = Mock()
+            process_torrents(client, [torrent], response, cross_seed_map, check_hnrs=True)
+            client.remove_torrent.assert_called()
