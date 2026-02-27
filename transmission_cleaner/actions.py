@@ -49,37 +49,34 @@ def process_torrents(
         print(
             f"\nSize of all torrents that could be removed (duplicates not accounted for): {removable_bits / (1024**3):.2f} GB"
         )
-    elif action in ["delete", "d"]:
+    elif action in ["delete", "d", "remove", "r"]:
         for torrent in torrents:
-            if torrent.id in cross_seed_map:
+            # If deleting something cross-seeded, only remove torrent
+            if action in ["d", "delete"] and torrent.id in cross_seed_map:
                 # Cross-seeded: protect data, remove torrent only
                 print(f"[PROTECTED] {torrent.name}: Cross-seeded, removing torrent only (keeping data)")
                 client.remove_torrent(torrent.id, delete_data=False)
-            elif torrent.is_private and check_hnrs and (ret := get_hnrs(torrent)):
+                continue
+
+            # Skip deletion if private torrent has HNR violations, otherwise proceed with specified action
+            ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
+            if torrent.is_private and check_hnrs and ret.violations:
                 # Private torrent with HNR violations: protect torrent and data, skipping deletion to keep seeding
-                print(f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(ret.violations)}), skipping delete")
-                if warns := ret.get_unknown_str():
-                    print("^  " + warns)
-            else:
-                # Not cross-seeded: safe to delete data
+                print(f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(ret.violations)}), skipping")
+                continue
+
+            # Safe to perform action
+            if action in ["d", "delete"]:
                 size_gb = torrent.total_size / (1024**3)
                 print(f"[ACTION] {torrent.name}: Removing with data ({size_gb:.2f} GB)")
                 client.remove_torrent(torrent.id, delete_data=True)
                 total_space_freed += torrent.total_size
+            else:
+                print(f"[ACTION] {torrent.name}: Removing without data")
+                client.remove_torrent(torrent.id, delete_data=False)
 
-    elif action in ["remove", "r"]:
-        for torrent in torrents:
-            ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
-            if torrent.is_private and check_hnrs:
-                if ret.violations:
-                    print(
-                        f"[PROTECTED] {torrent.name}: HNR violations ({', '.join(ret.violations)}), keeping torrent (skipping remove)"
-                    )
-                    continue
-                if warns := ret.get_unknown_str():
-                    print(warns)
-            print(f"[ACTION] {torrent.name}: Removing without data")
-            client.remove_torrent(torrent.id, delete_data=False)
+            if warns := ret.get_unknown_str():
+                print("^  " + warns)
 
     elif action in ["interactive", "i", None]:
         # Interactive mode
