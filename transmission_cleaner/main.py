@@ -148,6 +148,11 @@ def parse_args():
             "delete/d: remove orphaned files"
         ),
     )
+    orphans_parser.add_argument(
+        "--skip-disjoint",
+        action="store_true",
+        help="Skip check if the directory is within transmission's download directory",
+    )
     add_common_auth_args(orphans_parser)
 
     args = parser.parse_args()
@@ -244,12 +249,13 @@ def handle_orphans(client: Client, args):
         print(f"[ERROR]  Directory not found: {directory}")
         sys.exit(1)
 
-    # Check that the path passed as directory is inside the base_dir
-    base_dir = client.get_session().download_dir
-    base_path = pathlib.Path(base_dir)
-    if not (base_path in directory.parents or directory == base_path):
-        print(f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {base_dir}")
-        sys.exit(1)
+    # Check that the path passed as directory is inside the base_dir (unless --skip-disjoint is used)
+    if not args.skip_disjoint:
+        base_dir = client.get_session().download_dir
+        base_path = pathlib.Path(base_dir)
+        if not (base_path in directory.parents or directory == base_path):
+            print(f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {base_dir}")
+            sys.exit(1)
 
     print(f"[INFO]   Scanning directory: {directory}")
     scanned_files = scan_directory(directory, args.include_hidden)
