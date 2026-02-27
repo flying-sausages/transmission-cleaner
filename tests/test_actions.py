@@ -156,6 +156,8 @@ class TestProcessTorrents:
         client.remove_torrent.assert_called_with(1, delete_data=False)
         assert result == 0  # Cross-seeded torrent was protected
 
+
+class TestProcessTorrentsWithHnr:
     @patch("builtins.print")
     @patch("builtins.input")
     def test_protects_hnr_interactive(self, mock_input, mock_print):
@@ -173,9 +175,8 @@ class TestProcessTorrents:
             assert result == 0  # Torrent with HNR violations was protected
 
     @patch("builtins.print")
-    @patch("builtins.input")
-    def test_protects_hnr_direct(self, mock_input, mock_print):
-        """Interactive mode should protect torrents with HNR violations even if user chooses remove."""
+    def test_protects_hnr_direct(self, mock_print):
+        """Direct mode should protect torrents with HNR violations even if user chooses remove."""
         client = Mock()
         torrent = create_mock_torrent_private()
         cross_seed_map = {}
