@@ -25,7 +25,7 @@ def delete_torrent(client: Client, torrent: Torrent) -> int:
 def process_torrents(
     client: Client,
     torrents: Sequence[Torrent],
-    action: str | None,
+    action: str,
     cross_seed_map: Mapping[int, Sequence[Torrent]] | None = None,
     check_hnrs: bool = True,
 ) -> int:
@@ -46,24 +46,7 @@ def process_torrents(
     total_space_freed = 0
 
     # Handle action based on argument
-    if action in ["list", "l"]:
-        removable_bits = 0
-        for torrent in torrents:
-            ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
-            hnr = f" [HNR violations: {', '.join(ret.violations)}]" if ret.violations else ""
-            cross_status = " [CROSS-SEEDED]" if torrent.id in cross_seed_map else ""
-            size_gb = torrent.total_size / (1024**3)
-            print(f"  - {torrent.name}{cross_status}{hnr} ({size_gb:.2f} GB)")
-            if warns := ret.get_unknown_str():
-                print("    ^ " + warns)
-
-            if not check_hnrs or not torrent.is_private or not ret.violations:
-                # Only count size towards removable total if it doesn't have HNR violations
-                removable_bits += torrent.total_size
-        print(
-            f"\nSize of all torrents that could be removed (duplicates not accounted for): {removable_bits / (1024**3):.2f} GB"
-        )
-    elif action in ["delete", "d", "remove", "r"]:
+    if action in ["delete", "d", "remove", "r"]:
         for torrent in torrents:
             # If deleting something cross-seeded, only remove torrent
             if action in ["d", "delete"] and torrent.id in cross_seed_map:
@@ -88,7 +71,7 @@ def process_torrents(
             if warns := ret.get_unknown_str():
                 print("^  " + warns)
 
-    elif action in ["interactive", "i", None]:
+    elif action in ["interactive", "i"]:
         # Interactive mode
         for torrent in torrents:
             print()
@@ -118,6 +101,24 @@ def process_torrents(
             else:
                 print("[SKIP]   Skipped")
 
+    # Default = list mode
+    else:
+        removable_bits = 0
+        for torrent in torrents:
+            ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
+            hnr = f" [HNR violations: {', '.join(ret.violations)}]" if ret.violations else ""
+            cross_status = " [CROSS-SEEDED]" if torrent.id in cross_seed_map else ""
+            size_gb = torrent.total_size / (1024**3)
+            print(f"  - {torrent.name}{cross_status}{hnr} ({size_gb:.2f} GB)")
+            if warns := ret.get_unknown_str():
+                print("    ^ " + warns)
+
+            if not check_hnrs or not torrent.is_private or not ret.violations:
+                # Only count size towards removable total if it doesn't have HNR violations
+                removable_bits += torrent.total_size
+        print(
+            f"\nSize of all torrents that could be removed (duplicates not accounted for): {removable_bits / (1024**3):.2f} GB"
+        )
     return total_space_freed
 
 
@@ -136,16 +137,7 @@ def process_orphaned_files(
     """
     total_space_freed = 0
 
-    if action in ["list", "l"]:
-        for file_path in sorted(orphaned_files):
-            try:
-                size = file_path.stat().st_size if file_path.exists() else 0
-                size_mb = size / (1024 * 1024)
-                print(f"  - {file_path} ({size_mb:.2f} MB)")
-            except (OSError, PermissionError) as e:
-                print(f"  - {file_path} [ERROR: {e}]")
-
-    elif action in ["delete", "d"]:
+    if action in ["delete", "d"]:
         for file_path in orphaned_files:
             try:
                 if file_path.exists():
@@ -159,7 +151,7 @@ def process_orphaned_files(
             except (OSError, PermissionError) as e:
                 print(f"[ERROR]  Failed to delete {file_path}: {e}")
 
-    else:  # interactive mode
+    elif action in ["interactive", "i"]:  # interactive mode
         for file_path in orphaned_files:
             try:
                 if not file_path.exists():
@@ -176,5 +168,15 @@ def process_orphaned_files(
                     print("[SKIP]   Skipped")
             except (OSError, PermissionError) as e:
                 print(f"[ERROR]  Cannot process {file_path}: {e}")
+
+    # Default = List mode
+    else:
+        for file_path in sorted(orphaned_files):
+            try:
+                size = file_path.stat().st_size if file_path.exists() else 0
+                size_mb = size / (1024 * 1024)
+                print(f"  - {file_path} ({size_mb:.2f} MB)")
+            except (OSError, PermissionError) as e:
+                print(f"  - {file_path} [ERROR: {e}]")
 
     return total_space_freed

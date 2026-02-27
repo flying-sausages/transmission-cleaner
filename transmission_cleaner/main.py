@@ -167,9 +167,8 @@ def handle_hardlinks(client, args):
     print(f"[INFO]   Found {len(without_hardlinks)} torrents without hardlinks")
 
     # Normalize action for interactive mode
-    action = args.action if args.action not in ["interactive", "i"] else None
     check_hnrs = not bool(args.skip_hnr)
-    bytes_freed = process_torrents(client, without_hardlinks, action, None, check_hnrs)
+    bytes_freed = process_torrents(client, without_hardlinks, args.action, None, check_hnrs)
 
     # Print summary if any space was freed
     if bytes_freed > 0:
@@ -191,7 +190,6 @@ def handle_errors(client, args):
 
     # Process with cross-seed awareness
     check_cross_seed = not args.skip_cross_seed
-    action = args.action if args.action not in ["interactive", "i"] else None
 
     # Build cross-seed map
     cross_seed_map = {}
@@ -207,7 +205,7 @@ def handle_errors(client, args):
         print("[INFO]   Skipping cross-seed checks")
 
     # Process torrents with cross-seed protection using shared action processor
-    bytes_freed = process_torrents(client, errored_torrents, action, cross_seed_map=cross_seed_map)
+    bytes_freed = process_torrents(client, errored_torrents, args.action, cross_seed_map=cross_seed_map)
 
     # Print summary if any space was freed
     if bytes_freed > 0:
