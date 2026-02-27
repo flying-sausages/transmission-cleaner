@@ -86,6 +86,7 @@ transmission-cleaner errors --username USER --password PASSWORD
 - `--error-pattern` - Filter by error message pattern (e.g., "Unregistered")
 - `--skip-cross-seed` - Skip cross-seed detection (allows data deletion even if cross-seeded)
 - `--action` - Action to perform: `list` (default), `interactive`, `delete` (with data), `remove` (torrent only)
+- `--skip-hnr` - Skip HNR check for private torrents (allows deletion even if HNR would be violated)
 
 **Cross-Seed Protection:** By default, the errors command checks if torrent data is shared with other active torrents. If cross-seeding is detected, the `delete` action will only remove the torrent entry, protecting the shared data.
 

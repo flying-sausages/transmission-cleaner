@@ -112,6 +112,11 @@ def parse_args():
             "remove/r: remove torrent from client only"
         ),
     )
+    errors_parser.add_argument(
+        "--skip-hnr",
+        action="store_true",
+        help="Disable the HNR check for private torrents (default: False)",
+    )
     add_common_auth_args(errors_parser)
 
     # Orphans subcommand
@@ -166,9 +171,14 @@ def handle_hardlinks(client, args):
 
     print(f"[INFO]   Found {len(without_hardlinks)} torrents without hardlinks")
 
-    # Determine whether to check hit-and-run status based on the skip_hnr flag
     check_hnrs = not bool(args.skip_hnr)
-    bytes_freed = process_torrents(client, without_hardlinks, args.action, None, check_hnrs)
+    bytes_freed = process_torrents(
+        client,
+        without_hardlinks,
+        args.action,
+        cross_seed_map=None,
+        check_hnrs=check_hnrs,
+    )
 
     # Print summary if any space was freed
     if bytes_freed > 0:
@@ -205,7 +215,14 @@ def handle_errors(client, args):
         print("[INFO]   Skipping cross-seed checks")
 
     # Process torrents with cross-seed protection using shared action processor
-    bytes_freed = process_torrents(client, errored_torrents, args.action, cross_seed_map=cross_seed_map)
+    check_hnrs = not bool(args.skip_hnr)
+    bytes_freed = process_torrents(
+        client,
+        errored_torrents,
+        args.action,
+        cross_seed_map=cross_seed_map,
+        check_hnrs=check_hnrs,
+    )
 
     # Print summary if any space was freed
     if bytes_freed > 0:
