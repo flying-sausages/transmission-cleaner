@@ -1,9 +1,12 @@
 """Tests for orphaned file detection functionality."""
 
 import pathlib
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+
+import pytest
 
 from transmission_cleaner.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
+from transmission_cleaner.main import handle_orphans
 
 
 class TestScanDirectory:
@@ -217,62 +220,111 @@ class TestFindOrphanedFiles:
 class TestDirectoryValidation:
     """Tests for directory validation in handle_orphans.
 
-    Tests the validation logic in main.py:226-231 that ensures the specified
+    Tests the validation logic in handle_orphans() that ensures the specified
     directory is either the base download directory or a subdirectory within it.
     """
 
-    def test_directory_equals_base_path(self, tmp_path):
+    def create_mock_client_and_args(self, base_dir, scan_dir, skip_disjoint=False):
+        """Helper to create mocked client and args for testing."""
+        # Mock client with session
+        client = Mock()
+        session = Mock()
+        session.download_dir = str(base_dir)
+        client.get_session.return_value = session
+        client.get_torrents.return_value = []
+
+        # Mock args
+        args = Mock()
+        args.directory = str(scan_dir)
+        args.include_hidden = False
+        args.action = "list"
+        args.skip_disjoint = skip_disjoint
+
+        return client, args
+
+    @patch("transmission_cleaner.actions.process_orphaned_files", return_value=0)
+    @patch("transmission_cleaner.checkers.orphans.find_orphaned_files", return_value=[])
+    @patch("transmission_cleaner.checkers.orphans.get_tracked_files", return_value=set())
+    @patch("transmission_cleaner.checkers.orphans.scan_directory", return_value=[])
+    def test_directory_equals_base_path(self, mock_scan, mock_tracked, mock_find, mock_process, tmp_path):
         """Should allow directory that equals base download directory."""
         base_dir = tmp_path / "downloads"
         base_dir.mkdir()
 
-        # Directory is exactly the base path
-        directory = base_dir
-        base_path = pathlib.Path(base_dir)
+        client, args = self.create_mock_client_and_args(base_dir, base_dir)
 
-        # This should pass validation
-        is_valid = base_path in directory.parents or directory == base_path
-        assert is_valid is True
+        # Should complete without error
+        handle_orphans(client, args)  # Should not raise
 
-    def test_directory_inside_base_path(self, tmp_path):
+    @patch("transmission_cleaner.actions.process_orphaned_files", return_value=0)
+    @patch("transmission_cleaner.checkers.orphans.find_orphaned_files", return_value=[])
+    @patch("transmission_cleaner.checkers.orphans.get_tracked_files", return_value=set())
+    @patch("transmission_cleaner.checkers.orphans.scan_directory", return_value=[])
+    def test_directory_inside_base_path(self, mock_scan, mock_tracked, mock_find, mock_process, tmp_path):
         """Should allow subdirectory that is inside base download directory."""
         base_dir = tmp_path / "downloads"
         base_dir.mkdir()
         subdir = base_dir / "movies"
         subdir.mkdir()
 
-        # Directory is inside base path
-        directory = subdir
-        base_path = pathlib.Path(base_dir)
+        client, args = self.create_mock_client_and_args(base_dir, subdir)
 
-        # This should pass validation (directory is a child of base_path)
-        is_valid = base_path in directory.parents or directory == base_path
-        assert is_valid is True
+        # Should complete without error
+        handle_orphans(client, args)  # Should not raise
 
     def test_directory_outside_base_path(self, tmp_path):
-        """Directory that is outside base download directory is correctly rejected."""
+        """Directory that is outside base download directory should be rejected."""
         base_dir = tmp_path / "downloads"
         base_dir.mkdir()
         other_dir = tmp_path / "other"
         other_dir.mkdir()
 
-        # Directory is outside base path
-        directory = other_dir
-        base_path = pathlib.Path(base_dir)
+        client, args = self.create_mock_client_and_args(base_dir, other_dir)
 
-        # This should fail validation
-        is_valid = base_path in directory.parents or directory == base_path
-        assert is_valid is False
+        # Should exit with error
+        with pytest.raises(SystemExit) as exc_info:
+            handle_orphans(client, args)
+        assert exc_info.value.code == 1
 
     def test_directory_is_parent_of_base_path(self, tmp_path):
         """Should reject directory that is a parent of base download directory."""
         base_dir = tmp_path / "downloads" / "torrents"
         base_dir.mkdir(parents=True)
+        parent_dir = tmp_path / "downloads"
 
-        # Directory is a parent of base path
-        directory = tmp_path / "downloads"
-        base_path = pathlib.Path(base_dir)
+        client, args = self.create_mock_client_and_args(base_dir, parent_dir)
 
-        # This should fail validation (directory is parent, not child)
-        is_valid = base_path in directory.parents or directory == base_path
-        assert is_valid is False
+        # Should exit with error
+        with pytest.raises(SystemExit) as exc_info:
+            handle_orphans(client, args)
+        assert exc_info.value.code == 1
+
+    @patch("transmission_cleaner.actions.process_orphaned_files", return_value=0)
+    @patch("transmission_cleaner.checkers.orphans.find_orphaned_files", return_value=[])
+    @patch("transmission_cleaner.checkers.orphans.get_tracked_files", return_value=set())
+    @patch("transmission_cleaner.checkers.orphans.scan_directory", return_value=[])
+    def test_skip_disjoint_allows_any_directory(self, mock_scan, mock_tracked, mock_find, mock_process, tmp_path):
+        """When skip_disjoint is True, directory validation should be bypassed."""
+        base_dir = tmp_path / "downloads"
+        base_dir.mkdir()
+        unrelated_dir = tmp_path / "completely_different"
+        unrelated_dir.mkdir()
+
+        # With skip_disjoint=True, should allow directory outside base
+        client, args = self.create_mock_client_and_args(base_dir, unrelated_dir, skip_disjoint=True)
+
+        # Should complete without error even though directory is outside base
+        handle_orphans(client, args)  # Should not raise
+
+    def test_nonexistent_directory_rejected(self, tmp_path):
+        """Should reject a directory that doesn't exist."""
+        base_dir = tmp_path / "downloads"
+        base_dir.mkdir()
+        nonexistent = tmp_path / "does_not_exist"
+
+        client, args = self.create_mock_client_and_args(base_dir, nonexistent)
+
+        # Should exit with error before validation check
+        with pytest.raises(SystemExit) as exc_info:
+            handle_orphans(client, args)
+        assert exc_info.value.code == 1
