@@ -77,6 +77,7 @@ def process_torrents(
     elif action in ["interactive", "i", None]:
         # Interactive mode
         for torrent in torrents:
+            print()
             cross_status = " [CROSS-SEEDED]" if torrent.id in cross_seed_map else ""
             ret = get_hnrs(torrent) if torrent.is_private and check_hnrs else CheckHnrResult.empty()
             hnr = f" [HNR violations: {', '.join(ret.violations)}]" if ret.violations else ""
