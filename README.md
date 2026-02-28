@@ -104,7 +104,10 @@ transmission-cleaner orphans \
 **Options:**
 - `-d, --directory` - Directory to scan (required)
 - `--include-hidden` - Include hidden files (files starting with .)
+- `--skip-disjoint` - Skip validation that directory is within Transmission's download directory
 - `--action` - Action to perform: `list` (default), `interactive`, `delete`
+
+**Safety Check:** By default, the orphans command validates that the specified directory is within Transmission's base download directory. This prevents accidentally scanning and deleting files from unrelated directories. Use `--skip-disjoint` to bypass this check if you need to scan directories outside the Transmission download tree.
 
 **Note:** The orphans scanner automatically excludes:
 - Symlinks (to prevent scanning outside the target directory)

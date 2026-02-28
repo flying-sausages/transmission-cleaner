@@ -1,6 +1,9 @@
 import argparse
+import pathlib
 import signal
 import sys
+
+from transmission_rpc import Client
 
 from transmission_cleaner.actions import process_torrents
 from transmission_cleaner.client import create_client, get_client_config
@@ -146,6 +149,11 @@ def parse_args():
             "delete/d: remove orphaned files"
         ),
     )
+    orphans_parser.add_argument(
+        "--skip-disjoint",
+        action="store_true",
+        help="Skip validating that the scan directory is within Transmission's download directory",
+    )
     add_common_auth_args(orphans_parser)
 
     args = parser.parse_args()
@@ -158,7 +166,7 @@ def parse_args():
     return args
 
 
-def handle_hardlinks(client, args):
+def handle_hardlinks(client: Client, args):
     """Handle the hardlinks subcommand."""
 
     from transmission_cleaner.checkers.hardlinks import get_torrents_without_hardlinks
@@ -186,7 +194,7 @@ def handle_hardlinks(client, args):
         print(f"\n[INFO]   Total disk space freed: {space_freed_gb:.2f} GB")
 
 
-def handle_errors(client, args):
+def handle_errors(client: Client, args):
     """Handle the errors subcommand."""
     from transmission_cleaner.checkers.errors import check_cross_seeding, get_torrents_with_errors
 
@@ -230,16 +238,24 @@ def handle_errors(client, args):
         print(f"\n[INFO]   Total disk space freed: {space_freed_gb:.2f} GB")
 
 
-def handle_orphans(client, args):
+def handle_orphans(client: Client, args):
     """Handle the orphans subcommand."""
-    import pathlib
 
     from transmission_cleaner.actions import process_orphaned_files
     from transmission_cleaner.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
 
-    directory = pathlib.Path(args.directory)
+    directory = pathlib.Path(args.directory).resolve()
     if not directory.exists():
         print(f"[ERROR]  Directory not found: {directory}")
+        sys.exit(1)
+
+    # Check that the path passed as directory is inside the base_dir (unless --skip-disjoint is used)
+    dl_path = pathlib.Path(client.get_session().download_dir).resolve()
+    if not args.skip_disjoint and not directory.is_relative_to(dl_path):
+        print(
+            f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {dl_path} "
+            "(use --skip-disjoint to bypass)"
+        )
         sys.exit(1)
 
     print(f"[INFO]   Scanning directory: {directory}")
