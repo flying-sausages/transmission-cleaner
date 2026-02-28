@@ -1,4 +1,5 @@
 import argparse
+import pathlib
 import signal
 import sys
 
@@ -239,26 +240,23 @@ def handle_errors(client: Client, args):
 
 def handle_orphans(client: Client, args):
     """Handle the orphans subcommand."""
-    import pathlib
 
     from transmission_cleaner.actions import process_orphaned_files
     from transmission_cleaner.checkers.orphans import find_orphaned_files, get_tracked_files, scan_directory
 
-    directory = pathlib.Path(args.directory)
+    directory = pathlib.Path(args.directory).resolve()
     if not directory.exists():
         print(f"[ERROR]  Directory not found: {directory}")
         sys.exit(1)
 
     # Check that the path passed as directory is inside the base_dir (unless --skip-disjoint is used)
-    if not args.skip_disjoint:
-        base_dir = client.get_session().download_dir
-        base_path = pathlib.Path(base_dir)
-        if not (base_path in directory.parents or directory == base_path):
-            print(
-                f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {base_dir} "
-                "(use --skip-disjoint to bypass)"
-            )
-            sys.exit(1)
+    dl_path = pathlib.Path(client.get_session().download_dir).resolve()
+    if not args.skip_disjoint and not directory.is_relative_to(dl_path):
+        print(
+            f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {dl_path} "
+            "(use --skip-disjoint to bypass)"
+        )
+        sys.exit(1)
 
     print(f"[INFO]   Scanning directory: {directory}")
     scanned_files = scan_directory(directory, args.include_hidden)
