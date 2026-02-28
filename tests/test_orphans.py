@@ -286,7 +286,7 @@ class TestDirectoryValidation:
             handle_orphans(client, args)
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
-        assert "is not under Transmission's download directory" in captured.out
+        assert "is not inside Transmission's base download directory" in captured.out
 
     def test_directory_is_parent_of_base_path(self, tmp_path, capsys):
         """Should reject directory that is a parent of base download directory."""
@@ -301,7 +301,7 @@ class TestDirectoryValidation:
             handle_orphans(client, args)
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
-        assert "is not under Transmission's download directory" in captured.out
+        assert "is not inside Transmission's base download directory" in captured.out
 
     @patch("transmission_cleaner.actions.process_orphaned_files", return_value=0)
     @patch("transmission_cleaner.checkers.orphans.find_orphaned_files", return_value=[])
@@ -349,4 +349,4 @@ class TestDirectoryValidation:
             handle_orphans(client, args)
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
-        assert "is not under Transmission's download directory" in captured.out
+        assert "is not inside Transmission's base download directory" in captured.out
