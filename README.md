@@ -10,12 +10,12 @@ A comprehensive CLI tool for maintaining your Transmission torrents.
 - 🔗 **Find torrents without hardlinks** - Identify torrents that aren't hardlinked to media libraries (Sonarr, Radarr, etc.)
 - ‼️ **Manage errored torrents** - Find and clean up torrents with errors (unregistered, tracker issues, etc.)
 - 🗑️ **Detect orphaned files** - Discover files in your download directories that aren't tracked by any torrent
+- 🛡️ **Protections** - Checks for cross-seeding and HNR violations for private torrents (PTP, BTN, BHD, TVCUK)
 
 ## Support
 Unit tests ran against all of the following combinations
 - Python versions: 3.10 up to 3.14
 - OS: macOS, Linux, windows
-- Transmission v4
 
 ## Installation
 
@@ -68,6 +68,7 @@ transmission-cleaner hardlinks --username USER --password PASSWORD
 - `-t, --tracker` - Filter by announce URL (substring match)
 - `--min-days` - Minimum days of active seeding (default: 7)
 - `--action` - Action to perform: `list` (default), `interactive`, `delete` (with data), `remove` (torrent only)
+- `--skip-hnr` - Skip HNR check for private torrents (allows deletion even if HNR would be violated)
 
 ### 2. Errors Command
 
@@ -85,6 +86,7 @@ transmission-cleaner errors --username USER --password PASSWORD
 - `--error-pattern` - Filter by error message pattern (e.g., "Unregistered")
 - `--skip-cross-seed` - Skip cross-seed detection (allows data deletion even if cross-seeded)
 - `--action` - Action to perform: `list` (default), `interactive`, `delete` (with data), `remove` (torrent only)
+- `--skip-hnr` - Skip HNR check for private torrents (allows deletion even if HNR would be violated)
 
 **Cross-Seed Protection:** By default, the errors command checks if torrent data is shared with other active torrents. If cross-seeding is detected, the `delete` action will only remove the torrent entry, protecting the shared data.
 
@@ -193,3 +195,6 @@ uv run pytest
 # Run tests with coverage
 uv run pytest --cov
 ```
+
+#### HNRs
+There's a [template](transmission_cleaner/hnrs/_template.py) for HNR checks for private trackers. You can consult the [README.md](transmission_cleaner/hnrs/README.md) in that directory for instructions on how to add new templates.

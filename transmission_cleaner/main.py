@@ -80,6 +80,11 @@ def parse_args():
             "remove/r: remove torrent from client only"
         ),
     )
+    hardlinks_parser.add_argument(
+        "--skip-hnr",
+        action="store_true",
+        help="Disable the HNR check for private torrents (default: False)",
+    )
     add_common_auth_args(hardlinks_parser)
 
     # Errors subcommand
@@ -106,6 +111,11 @@ def parse_args():
             "delete/d: remove torrent with data (respects cross-seed check) | "
             "remove/r: remove torrent from client only"
         ),
+    )
+    errors_parser.add_argument(
+        "--skip-hnr",
+        action="store_true",
+        help="Disable the HNR check for private torrents (default: False)",
     )
     add_common_auth_args(errors_parser)
 
@@ -161,9 +171,14 @@ def handle_hardlinks(client, args):
 
     print(f"[INFO]   Found {len(without_hardlinks)} torrents without hardlinks")
 
-    # Normalize action for interactive mode
-    action = args.action if args.action not in ["interactive", "i"] else None
-    bytes_freed = process_torrents(client, without_hardlinks, action)
+    check_hnrs = not bool(args.skip_hnr)
+    bytes_freed = process_torrents(
+        client,
+        without_hardlinks,
+        args.action,
+        cross_seed_map=None,
+        check_hnrs=check_hnrs,
+    )
 
     # Print summary if any space was freed
     if bytes_freed > 0:
@@ -185,7 +200,6 @@ def handle_errors(client, args):
 
     # Process with cross-seed awareness
     check_cross_seed = not args.skip_cross_seed
-    action = args.action if args.action not in ["interactive", "i"] else None
 
     # Build cross-seed map
     cross_seed_map = {}
@@ -201,7 +215,14 @@ def handle_errors(client, args):
         print("[INFO]   Skipping cross-seed checks")
 
     # Process torrents with cross-seed protection using shared action processor
-    bytes_freed = process_torrents(client, errored_torrents, action, cross_seed_map=cross_seed_map)
+    check_hnrs = not bool(args.skip_hnr)
+    bytes_freed = process_torrents(
+        client,
+        errored_torrents,
+        args.action,
+        cross_seed_map=cross_seed_map,
+        check_hnrs=check_hnrs,
+    )
 
     # Print summary if any space was freed
     if bytes_freed > 0:

@@ -2,27 +2,41 @@
 
 from unittest.mock import Mock, patch
 
-from transmission_rpc import Torrent
+import pytest
+from transmission_rpc import Torrent, Tracker
 
 from transmission_cleaner.actions import process_torrents
+
+
+def create_mock_torrent(name, torrent_id, total_size=1024**3):
+    """Helper to create a mock torrent."""
+    torrent = Mock(spec=Torrent)
+    torrent.name = name
+    torrent.id = torrent_id
+    torrent.total_size = total_size  # Default to 1 GB
+    torrent.is_private = False
+    return torrent
+
+
+def create_mock_torrent_private(*args, **kwargs):
+    torrent = create_mock_torrent("t1", 1)
+    torrent.is_private = True
+    torrent.ratio = 0.67
+    torrent.seconds_seeding = 123123
+    tracker = Mock(spec=Tracker)
+    tracker.announce = "https://landof.tv:3232/asdasdasdasdasd"
+    torrent.trackers = [tracker]
+    return torrent
 
 
 class TestProcessTorrents:
     """Tests for torrent processing actions."""
 
-    def create_mock_torrent(self, name, torrent_id, total_size=1024**3):
-        """Helper to create a mock torrent."""
-        torrent = Mock(spec=Torrent)
-        torrent.name = name
-        torrent.id = torrent_id
-        torrent.total_size = total_size  # Default to 1 GB
-        return torrent
-
     @patch("builtins.print")
     def test_list_action_does_not_remove(self, mock_print):
         """List action should display torrents without removing them."""
         client = Mock()
-        torrents = [self.create_mock_torrent("t1", 1)]
+        torrents = [create_mock_torrent("t1", 1)]
 
         result = process_torrents(client, torrents, "list")
 
@@ -34,7 +48,7 @@ class TestProcessTorrents:
     def test_delete_action_removes_with_data(self, mock_print):
         """Delete action should remove torrents and their data."""
         client = Mock()
-        torrents = [self.create_mock_torrent("t1", 1)]
+        torrents = [create_mock_torrent("t1", 1)]
 
         result = process_torrents(client, torrents, "d")
 
@@ -45,7 +59,7 @@ class TestProcessTorrents:
     def test_remove_action_keeps_data(self, mock_print):
         """Remove action should remove torrents but keep data."""
         client = Mock()
-        torrents = [self.create_mock_torrent("t1", 1)]
+        torrents = [create_mock_torrent("t1", 1)]
 
         result = process_torrents(client, torrents, "r")
 
@@ -58,10 +72,10 @@ class TestProcessTorrents:
     def test_interactive_mode_remove(self, mock_input, mock_print):
         """Interactive mode should remove without data when user chooses 'r'."""
         client = Mock()
-        torrents = [self.create_mock_torrent("t1", 1)]
+        torrents = [create_mock_torrent("t1", 1)]
         mock_input.return_value = "r"
 
-        _ = process_torrents(client, torrents, None)
+        _ = process_torrents(client, torrents, "interactive")
 
         client.remove_torrent.assert_called_with(1, delete_data=False)
 
@@ -70,10 +84,10 @@ class TestProcessTorrents:
     def test_interactive_mode_delete(self, mock_input, mock_print):
         """Interactive mode should remove with data when user chooses 'd'."""
         client = Mock()
-        torrents = [self.create_mock_torrent("t1", 1)]
+        torrents = [create_mock_torrent("t1", 1)]
         mock_input.return_value = "d"
 
-        result = process_torrents(client, torrents, None)
+        result = process_torrents(client, torrents, "interactive")
 
         client.remove_torrent.assert_called_with(1, delete_data=True)
         assert result == 1024**3  # Should return 1 GB
@@ -83,10 +97,10 @@ class TestProcessTorrents:
     def test_interactive_mode_skip(self, mock_input, mock_print):
         """Interactive mode should skip when user chooses 'n' or empty."""
         client = Mock()
-        torrents = [self.create_mock_torrent("t1", 1)]
+        torrents = [create_mock_torrent("t1", 1)]
         mock_input.return_value = "n"
 
-        result = process_torrents(client, torrents, None)
+        result = process_torrents(client, torrents, "interactive")
 
         client.remove_torrent.assert_not_called()
         assert result == 0  # Skip doesn't free space
@@ -96,9 +110,9 @@ class TestProcessTorrents:
         """Should process all torrents in the list."""
         client = Mock()
         torrents = [
-            self.create_mock_torrent("t1", 1),
-            self.create_mock_torrent("t2", 2),
-            self.create_mock_torrent("t3", 3),
+            create_mock_torrent("t1", 1),
+            create_mock_torrent("t2", 2),
+            create_mock_torrent("t3", 3),
         ]
 
         result = process_torrents(client, torrents, "r")
@@ -114,8 +128,8 @@ class TestProcessTorrents:
         """Delete action should keep data for cross-seeded torrents."""
         client = Mock()
         torrents = [
-            self.create_mock_torrent("t1", 1),
-            self.create_mock_torrent("t2", 2),
+            create_mock_torrent("t1", 1),
+            create_mock_torrent("t2", 2),
         ]
         cross_seed_map = {1: [Mock(spec=Torrent)]}  # t1 is cross-seeded
 
@@ -132,13 +146,75 @@ class TestProcessTorrents:
     def test_interactive_mode_protects_cross_seeded_on_delete(self, mock_input, mock_print):
         """Interactive mode should protect cross-seeded torrents even if user chooses delete."""
         client = Mock()
-        torrents = [self.create_mock_torrent("t1", 1)]
+        torrents = [create_mock_torrent("t1", 1)]
         cross_seed_map = {1: [Mock(spec=Torrent)]}  # t1 is cross-seeded
 
         # User chooses 'd' (delete with data)
         mock_input.return_value = "d"
-        result = process_torrents(client, torrents, None, cross_seed_map)
+        result = process_torrents(client, torrents, "interactive", cross_seed_map)
 
         # Should remove without data due to cross-seed protection
         client.remove_torrent.assert_called_with(1, delete_data=False)
         assert result == 0  # Cross-seeded torrent was protected
+
+
+class TestProcessTorrentsWithHnr:
+    @patch("builtins.print")
+    @patch("builtins.input")
+    @pytest.mark.parametrize("response", ["r", "d"])
+    def test_protects_hnr_interactive(self, mock_input, mock_print, response):
+        """Interactive mode should protect torrents with HNR violations even if user chooses remove."""
+        client = Mock()
+        torrent = create_mock_torrent_private()
+        cross_seed_map = {}
+
+        result = process_torrents(client, [torrent], "r", cross_seed_map, True)
+
+        mock_input.return_value = response
+        result = process_torrents(client, [torrent], "interactive", cross_seed_map, check_hnrs=True)
+        client.remove_torrent.assert_not_called()
+        assert result == 0  # Torrent with HNR violations was protected
+
+    @patch("builtins.print")
+    @pytest.mark.parametrize("response", ["r", "d"])
+    def test_protects_hnr_direct(self, mock_print, response):
+        """Direct mode should protect torrents with HNR violations even if user chooses remove."""
+        client = Mock()
+        torrent = create_mock_torrent_private()
+        cross_seed_map = {}
+
+        result = process_torrents(client, [torrent], response, cross_seed_map, check_hnrs=True)
+        client.remove_torrent.assert_not_called()
+        assert result == 0  # Torrent with HNR violations was protected
+
+    @patch("builtins.print")
+    @patch("builtins.input")
+    @pytest.mark.parametrize("response", ["r", "d"])
+    def test_deletes_hnr_interactive(self, mock_input, mock_print, response):
+        """Interactive mode should delete torrents without HNRs"""
+        client = Mock()
+        torrent = create_mock_torrent_private()
+        torrent.ratio = 120
+
+        mock_input.return_value = response
+        result = process_torrents(client, [torrent], "interactive", cross_seed_map={}, check_hnrs=True)
+        client.remove_torrent.assert_called()
+        if response == "r":
+            assert result == 0
+        else:
+            assert result == 1024**3  # Should return 1 GB for delete action
+
+    @patch("builtins.print")
+    @pytest.mark.parametrize("response", ["r", "d"])
+    def test_deletes_hnr_direct(self, mock_print, response):
+        """Direct mode should delete torrents without HNRs"""
+        torrent = create_mock_torrent_private()
+        torrent.ratio = 120
+
+        client = Mock()
+        result = process_torrents(client, [torrent], response, cross_seed_map={}, check_hnrs=True)
+        client.remove_torrent.assert_called()
+        if response == "r":
+            assert result == 0
+        else:
+            assert result == 1024**3  # Should return 1 GB for delete action
