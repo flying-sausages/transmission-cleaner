@@ -336,13 +336,13 @@ class TestDirectoryValidation:
         assert "Directory not found" in captured.out
 
     def test_unresolved_directory_rejected(self, tmp_path, capsys):
-        """Should reject a directory that doesn't exist."""
+        """Should reject a directory path that resolves outside the base download directory."""
         base_dir = tmp_path / "downloads"
         base_dir.mkdir()
-        nonexistent = tmp_path / ".." / "does_not_exist"
-        nonexistent.mkdir()
+        outside_base_dir = tmp_path / ".." / "does_not_exist"
+        outside_base_dir.mkdir()
 
-        client, args = self.create_mock_client_and_args(base_dir, nonexistent)
+        client, args = self.create_mock_client_and_args(base_dir, outside_base_dir)
 
         # Should exit with error before validation check
         with pytest.raises(SystemExit) as exc_info:
