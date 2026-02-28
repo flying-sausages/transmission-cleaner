@@ -2,7 +2,7 @@ import argparse
 import signal
 import sys
 
-from transmission_rpc.client import Client
+from transmission_rpc import Client
 
 from transmission_cleaner.actions import process_torrents
 from transmission_cleaner.client import create_client, get_client_config
@@ -151,7 +151,7 @@ def parse_args():
     orphans_parser.add_argument(
         "--skip-disjoint",
         action="store_true",
-        help="Skip check if the directory is within transmission's download directory",
+        help="Skip validating that the scan directory is within Transmission's download directory",
     )
     add_common_auth_args(orphans_parser)
 
@@ -254,7 +254,10 @@ def handle_orphans(client: Client, args):
         base_dir = client.get_session().download_dir
         base_path = pathlib.Path(base_dir)
         if not (base_path in directory.parents or directory == base_path):
-            print(f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {base_dir}")
+            print(
+                f"[ERROR]  Directory {directory} is not inside Transmission's base download directory {base_dir} "
+                "(use --skip-disjoint to bypass)"
+            )
             sys.exit(1)
 
     print(f"[INFO]   Scanning directory: {directory}")
