@@ -272,7 +272,7 @@ class TestDirectoryValidation:
         # Should complete without error
         handle_orphans(client, args)  # Should not raise
 
-    def test_directory_outside_base_path(self, tmp_path):
+    def test_directory_outside_base_path(self, tmp_path, capsys):
         """Directory that is outside base download directory should be rejected."""
         base_dir = tmp_path / "downloads"
         base_dir.mkdir()
@@ -285,8 +285,10 @@ class TestDirectoryValidation:
         with pytest.raises(SystemExit) as exc_info:
             handle_orphans(client, args)
         assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "is not under Transmission's download directory" in captured.out
 
-    def test_directory_is_parent_of_base_path(self, tmp_path):
+    def test_directory_is_parent_of_base_path(self, tmp_path, capsys):
         """Should reject directory that is a parent of base download directory."""
         base_dir = tmp_path / "downloads" / "torrents"
         base_dir.mkdir(parents=True)
@@ -298,6 +300,8 @@ class TestDirectoryValidation:
         with pytest.raises(SystemExit) as exc_info:
             handle_orphans(client, args)
         assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "is not under Transmission's download directory" in captured.out
 
     @patch("transmission_cleaner.actions.process_orphaned_files", return_value=0)
     @patch("transmission_cleaner.checkers.orphans.find_orphaned_files", return_value=[])
@@ -316,7 +320,7 @@ class TestDirectoryValidation:
         # Should complete without error even though directory is outside base
         handle_orphans(client, args)  # Should not raise
 
-    def test_nonexistent_directory_rejected(self, tmp_path):
+    def test_nonexistent_directory_rejected(self, tmp_path, capsys):
         """Should reject a directory that doesn't exist."""
         base_dir = tmp_path / "downloads"
         base_dir.mkdir()
@@ -328,3 +332,21 @@ class TestDirectoryValidation:
         with pytest.raises(SystemExit) as exc_info:
             handle_orphans(client, args)
         assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "Directory not found" in captured.out
+
+    def test_unresolved_directory_rejected(self, tmp_path, capsys):
+        """Should reject a directory that doesn't exist."""
+        base_dir = tmp_path / "downloads"
+        base_dir.mkdir()
+        nonexistent = tmp_path / ".." / "does_not_exist"
+        nonexistent.mkdir()
+
+        client, args = self.create_mock_client_and_args(base_dir, nonexistent)
+
+        # Should exit with error before validation check
+        with pytest.raises(SystemExit) as exc_info:
+            handle_orphans(client, args)
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "is not under Transmission's download directory" in captured.out
